@@ -1,0 +1,29 @@
+akka {
+  loglevel = DEBUG
+           actor {
+             debug {
+               receive = on
+               lifecycle = off
+             }
+           }
+}
+
+spray.can.server {
+  request-timeout = 1s
+}
+
+http {
+  host = "0.0.0.0"
+  host = ${?HOST}
+  port = 3788
+  port = ${?PORT}
+}
+
+postgres {
+	host = "localhost"
+	port = 5432
+	dbname = "bitstampTestNew"
+	driver = "org.postgresql.Driver"
+    user = "asgeir"
+    password = ""
+}

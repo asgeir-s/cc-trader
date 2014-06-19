@@ -15,13 +15,13 @@ class DataActorSpec extends UnitTest {
 
 
   // only do new like this in tests.
-  val dataActorRef = TestActorRef(new DataActor("src/test/resources/testConfig"))
+  val dataActorRef = TestActorRef[DataActor]
   val actor = dataActorRef.underlyingActor
 
   test("startDate and endDate should be set to the first and last entry, respectfully, in the test-cvs.") {
     println("Start:" + actor.startTime)
     assert(actor.startTime.compareTo(new Date(1315922016L * 1000L)) == 0)
-    assert(actor.endTime.compareTo(new Date(1335225477L * 1000L)) == 0)
+    assert(actor.endTime.after(new Date(1403173902L * 1000L)))
   }
 
   test("readFromDB should not return ant data outside of the specified time interval, " +

@@ -1,6 +1,6 @@
 package com.cctrader
 
-import akka.actor.ActorSystem
+import akka.actor.{Props, ActorSystem}
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -17,6 +17,6 @@ object Boot extends App {
   // ActorSystem to host our application in
   implicit val system = ActorSystem("actor-system")
 
-  val dataActor = system.actorOf(DataActor.props, "dataActor")
+  val dataActor = system.actorOf(Props[DataActor], "dataActor")
 
 }

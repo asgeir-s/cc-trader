@@ -10,23 +10,15 @@ import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
-import scala.slick.jdbc.{StaticQuery => Q}
+import scala.slick.jdbc.{StaticQuery => Q, ResultSetConcurrency}
 
 /**
  *
  */
-class DataActor(configFile: String) extends Actor with ActorLogging {
+class DataActor() extends Actor with ActorLogging {
 
-  val config = {
-    // for testing
-    if (configFile.equals(""))
-      ConfigFactory.load()
-    else {
-      val myConfigFile = new File(configFile)
-      val fileConfig: Config = ConfigFactory.parseFile(myConfigFile)
-      ConfigFactory.load(fileConfig)
-    }
-  }
+  val config = ConfigFactory.load()
+
 
   val tsCoordinators = context.actorSelection("../*")
 
@@ -37,7 +29,7 @@ class DataActor(configFile: String) extends Actor with ActorLogging {
     user = config.getString("postgres.user"),
     password = config.getString("postgres.password"))
 
-  implicit val session: Session = databaseFactory.createSession()
+  implicit val session: Session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
 
   val tickTable = TableQuery[TickTable]
   val min1Table = TableQuery[Min1Table]
@@ -316,10 +308,6 @@ class DataActor(configFile: String) extends Actor with ActorLogging {
     case "RequestLiveData" =>
       log.error("Retrieved RequestLiveData. But its not implemented.")
 
-    case "UpdateDB" =>
-      log.debug("Starting to update the database.")
-      context.actorOf(BitcoinChartsToDBActor.props(session = databaseFactory.createSession()))
-
     case DataReady(newStartTime: Date, newEndTime: Date) =>
       if(!sender().equals(self)) {
         startTime = newStartTime
@@ -328,9 +316,5 @@ class DataActor(configFile: String) extends Actor with ActorLogging {
         "tsManagerActor ! DataReady(startTime, endTime)"
       }
   }
-}
-
-object DataActor {
-  def props: Props = Props(new DataActor(""))
 }
 

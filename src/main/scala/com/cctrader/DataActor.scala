@@ -130,8 +130,9 @@ class DataActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case request: MarketDataSettings =>
-      sender ! getDataFromDB(request)
+    case marketDataSettings: MarketDataSettings =>
+      log.info("Received: MarketDataSettings: getting data from database and sending back. MarketDataSettings:" + marketDataSettings)
+      sender ! getDataFromDB(marketDataSettings)
 
     case "RequestLiveData" =>
       log.error("Retrieved RequestLiveData. But its not implemented.")

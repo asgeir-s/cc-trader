@@ -13,8 +13,6 @@ import scala.slick.jdbc.{StaticQuery => Q}
  */
 class DataActorSpec extends UnitTest {
 
-
-  // only do new like this in tests.
   val dataActorRef = TestActorRef[DataActor]
   val actor = dataActorRef.underlyingActor
 
@@ -27,12 +25,21 @@ class DataActorSpec extends UnitTest {
   test("readFromDB should not return ant data outside of the specified time interval, " +
     "for Granularity.min1") {
 
-    val marketDataSet = actor.getDataFromDB(RequestData(
-      new Date(1325922016L * 1000L),
-      100,
-      Granularity.min1,
-      CurrencyPair.BTC_USD,
-      Exchange.bitstamp))
+    val marketDataSettings = MarketDataSettings(
+      startDate = new Date(1325922016L * 1000L),
+      numberOfHistoricalPoints = 100,
+      granularity = Granularity.min1,
+      currencyPair = CurrencyPair.BTC_USD,
+      exchange = Exchange.bitstamp,
+      PriceChangeScale = 70,
+      VolumeChangeScale = 1000,
+      MinPrice = 0,
+      MaxPrice = 1500,
+      MinVolume = 0,
+      MaxVolume = 10000
+    )
+
+    val marketDataSet = actor.getDataFromDB(marketDataSettings)
 
     assert(marketDataSet(0).date.before(new Date(1332922016L * 1000L)))
     assert(marketDataSet.last.date.after(new Date((1325922016L - 60 * 101) * 1000L)))
@@ -53,12 +60,21 @@ class DataActorSpec extends UnitTest {
   test("readFromDB should not return ant data outside of the specified time interval, " +
     "for Granularity.min30") {
 
-    val marketDataSet = actor.getDataFromDB(RequestData(
-      new Date(1325922016L * 1000L),
-      100,
-      Granularity.min30,
-      CurrencyPair.BTC_USD,
-      Exchange.bitstamp))
+    val marketDataSettings = MarketDataSettings(
+      startDate = new Date(1325922016L * 1000L),
+      numberOfHistoricalPoints = 100,
+      granularity = Granularity.min30,
+      currencyPair = CurrencyPair.BTC_USD,
+      exchange = Exchange.bitstamp,
+      PriceChangeScale = 70,
+      VolumeChangeScale = 1000,
+      MinPrice = 0,
+      MaxPrice = 1500,
+      MinVolume = 0,
+      MaxVolume = 10000
+    )
+
+    val marketDataSet = actor.getDataFromDB(marketDataSettings)
 
     assert(marketDataSet(0).date.before(new Date(1332922016L * 1000L)))
     assert(marketDataSet.last.date.after(new Date((1325922016L - 1800 * 101) * 1000L)))
@@ -78,12 +94,21 @@ class DataActorSpec extends UnitTest {
   test("readFromDB should not return ant data outside of the specified time interval, " +
     "for Granularity.day") {
 
-    val marketDataSet = actor.getDataFromDB(RequestData(
-      new Date(1325922016L * 1000L),
-      30,
-      Granularity.day,
-      CurrencyPair.BTC_USD,
-      Exchange.bitstamp))
+    val marketDataSettings = MarketDataSettings(
+      startDate = new Date(1325922016L * 1000L),
+      numberOfHistoricalPoints = 30,
+      granularity = Granularity.day,
+      currencyPair = CurrencyPair.BTC_USD,
+      exchange = Exchange.bitstamp,
+      PriceChangeScale = 70,
+      VolumeChangeScale = 1000,
+      MinPrice = 0,
+      MaxPrice = 1500,
+      MinVolume = 0,
+      MaxVolume = 10000
+    )
+
+    val marketDataSet = actor.getDataFromDB(marketDataSettings)
 
     assert(marketDataSet(0).date.before(new Date(1332922016L * 1000L)))
     assert(marketDataSet.last.date.after(new Date((1325922016L - 86400 * 31) * 1000L)))
@@ -101,12 +126,22 @@ class DataActorSpec extends UnitTest {
   }
 
   test("The returned Datapoints from request data should be the numberOfHistorical points before") {
-    val marketDataSet = actor.getDataFromDB(RequestData(
-      new Date(1335225456L * 1000L),
-      10,
-      Granularity.min1,
-      CurrencyPair.BTC_USD,
-      Exchange.bitstamp)
+
+    val marketDataSettings = MarketDataSettings(
+      startDate = new Date(1335225456L * 1000L),
+      numberOfHistoricalPoints = 10,
+      granularity = Granularity.min1,
+      currencyPair = CurrencyPair.BTC_USD,
+      exchange = Exchange.bitstamp,
+      PriceChangeScale = 70,
+      VolumeChangeScale = 1000,
+      MinPrice = 0,
+      MaxPrice = 1500,
+      MinVolume = 0,
+      MaxVolume = 10000
+    )
+
+    val marketDataSet = actor.getDataFromDB(marketDataSettings
     )
 
     val iterator = marketDataSet.iterator

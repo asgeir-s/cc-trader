@@ -65,9 +65,9 @@ object Exchange extends Enumeration {
 }
 
 
-object OrderType extends Enumeration {
-  type OrderType = Value
-  val BUY, SELL = Value
+object Signal extends Enumeration {
+  type Signal = Value
+  val BUY, SELL, HOLD = Value
 }
 
 object CurrencyPair extends Enumeration {

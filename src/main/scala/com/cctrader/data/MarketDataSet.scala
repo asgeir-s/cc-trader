@@ -2,67 +2,193 @@ package com.cctrader.data
 
 import java.util.Date
 
-import com.cctrader.data.CurrencyPair.CurrencyPair
-import com.cctrader.data.Exchange.Exchange
-import com.cctrader.data.Granularity.Granularity
+import com.cctrader.MarketDataSettings
+import org.apache.commons.math3.analysis.function.Sigmoid
+
+import scala.collection.mutable.ListBuffer
 
 /**
  * A collection of DataPoints.
+ * The collection will have a fixed size of MaxSize. The oldest points will be removed when new are added.
+ * The min and max are updated when new points come inn.
+ *
+ * DataPoints can be normalized.
+ *
+ * !Change is GOOD, Absolute is bad!
+ *
+ * According to : http://www.mirlabs.org/ijcisim/regular_papers_2014/IJCISIM_24.pdf
+ * the sigmoid function is one of the best normalizers for ANN usage.
  */
-case class MarketDataSet(data: List[DataPoint],
-                         granularity: Granularity,
-                         currencyPair: CurrencyPair,
-                         exchange: Exchange,
-                         minPrice: Double,
-                         maxPrice: Double,
-                         minVolume: Double,
-                         maxVolume: Double) {
+case class MarketDataSet(private val data: List[DataPoint], settings: MarketDataSettings) {
 
+  if (settings.numberOfHistoricalPoints < data.length) {
+    throw new Exception("dataPoint list is bigger then maxSize.")
+  }
 
-  def size = data.length
+  val sigmoid = new Sigmoid(-1.0, 1.0)
 
-  def apply(index: Int) = data(index)
+  val list: ListBuffer[DataPoint] = ListBuffer()
+  list.++=(data)
 
-  def last = data.last
-
-  def iterator = data.iterator
-
-  val fromDate: Date = data(0).date
-
-  val toDate: Date = data.last.date
-
-  /*
-  Returns a new MarketDataSet consisting of this and that.
-  If it fails this is returned.
+  /**
+   * Add new dataPoint to this set
+   * @param dataPoint to be added
    */
-  def +(that: MarketDataSet): MarketDataSet = {
-    if (this.toDate.compareTo(that.fromDate) <= 0 && this.granularity == that.granularity && this
-      .currencyPair == that.currencyPair && this.exchange == that.exchange)
-      MarketDataSet(this.data ++ that.data, this.granularity, this.currencyPair,
-        this.exchange, this.minPrice.min(that.minPrice), this.maxPrice.max(that.maxPrice),
-        this.minVolume.min(that.minVolume), this.maxVolume.max(that.maxPrice))
-    else
-      this
+  def addDataPoint(dataPoint: DataPoint) {
+    if (dataPoint.low < settings.MinPrice) {
+      throw new Exception("dataPoint price is lower then minPrice:" + settings.MinPrice + ".")
+    }
+    if (dataPoint.high > settings.MaxPrice) {
+      throw new Exception("dataPoint price is higher then maxPrice:" + settings.MaxPrice + ".")
+    }
+    if (dataPoint.volume < settings.MinVolume) {
+      throw new Exception("dataPoint volume is lower then minVolume:" + settings.MinVolume + ".")
+    }
+    if (dataPoint.volume > settings.MaxVolume) {
+      throw new Exception("dataPoint volume is higher then maxVolume:" + settings.MaxVolume + ".")
+    }
+    if (list.size == settings.numberOfHistoricalPoints) {
+      list.trimStart(1)
+    }
+    list.append(dataPoint)
   }
 
-  def getSubset(fromIndex: Int, toIndex: Int): MarketDataSet = {
-    val newData = data.slice(fromIndex, toIndex)
-    val minPrice = newData.minBy(_.low)
-    val maxPrice = newData.maxBy(_.high)
-    val minVolume = newData.minBy(_.volume)
-    val maxVolume = newData.maxBy(_.volume)
-    new MarketDataSet(newData, granularity,
-      currencyPair,
-      exchange,
-      minPrice.low,
-      maxPrice.high,
-      minVolume.volume,
-      maxVolume.volume)
+  /**
+   * Sigmoid Normalization for change between prices. Scaled with: PriceChangeScale.
+   *
+   * @param value change in price between to points
+   * @return divided by PriceChangeScale and the normalized value with Sigmoid Normalization to range -1 to 1
+   */
+  def sigmoidNormalizerPriceChange(value: Double): Double = sigmoid.value(value / settings.PriceChangeScale) //1.0 / (1.0 + Math.exp(-value))
+
+  /**
+   * Sigmoid Normalization for change between volumes. Scaled with: VolumeChangeScale.
+   *
+   * @param value change in volume between to points
+   * @return divided by VolumeChangeScale and the normalized value with Sigmoid Normalization to range -1 to 1
+   */
+  def sigmoidNormalizerVolumeChange(value: Double): Double = sigmoid.value(value / settings.VolumeChangeScale) //1.0 / (1.0 + Math.exp(-value))
+
+  /**
+   * Sigmoid Normalization for absolute price. Scaled with: (MaxPrice - MinPrice).
+   *
+   * @param value change in price between to points
+   * @return divided by (MaxPrice - MinPrice) and the normalized value with Sigmoid Normalization to range -1 to 1
+   */
+  def sigmoidNormalizerPriceAbsolute(value: Double): Double = sigmoid.value(value / (settings.MaxPrice - settings.MinPrice)) //1.0 / (1.0 + Math.exp(-value))
+
+  /**
+   * Sigmoid Normalization for absolute volume. Scaled with: (MaxVolume - MinVolume).
+   *
+   * @param value change in volume between to points
+   * @return divided by (MaxVolume - MinVolume) and the normalized value with Sigmoid Normalization to range -1 to 1
+   */
+  def sigmoidNormalizerVolumeAbsolute(value: Double): Double = sigmoid.value(value / (settings.MaxVolume - settings.MinVolume)) //1.0 / (1.0 + Math.exp(-value))
+
+
+  /**
+   * Absolute normalize Sigmoid dataPoint.
+   *
+   * @param dataPoint dataPoint to normalize
+   * @param priceAbsoluteNormalizedFunction function for absolute price normalization
+   * @param volumeAbsoluteNormalizedFunction function for absolute volume normalization
+   * @return dataPoint with absolute normalized values
+   */
+  def normalizedDataPointAbsolute(dataPoint: DataPoint, priceAbsoluteNormalizedFunction: Double => Double, volumeAbsoluteNormalizedFunction: Double => Double): DataPoint = {
+    DataPoint(
+      dataPoint.id,
+      dataPoint.sourceId,
+      dataPoint.timestamp,
+      sigmoidNormalizerVolumeChange(dataPoint.open),
+      sigmoidNormalizerVolumeChange(dataPoint.close),
+      sigmoidNormalizerVolumeChange(dataPoint.low),
+      sigmoidNormalizerVolumeChange(dataPoint.high),
+      volumeAbsoluteNormalizedFunction(dataPoint.volume)
+    )
   }
+
+  /**
+   * Change normalize Sigmoid "dataPoint".
+   * This is not a real dataPoint, only a value holder.
+   *
+   * @param first the first point (according to timestamp)
+   * @param last the second point (according to timestamp)
+   * @param priceChangeNormalizedFunction function for change price normalization
+   * @param volumeChangeNormalizedFunction function for change volume normalization
+   * @return normalized dataPoint
+   */
+  def normalizedDataPointChange(first: DataPoint, last: DataPoint, priceChangeNormalizedFunction: Double => Double, volumeChangeNormalizedFunction: Double => Double): DataPoint = {
+    DataPoint(
+      None,
+      None,
+      0,
+      sigmoidNormalizerVolumeChange(last.open - first.open),
+      sigmoidNormalizerVolumeChange(last.close - first.close),
+      sigmoidNormalizerVolumeChange(last.low - first.low),
+      sigmoidNormalizerVolumeChange(last.high - first.high),
+      sigmoidNormalizerVolumeChange(last.volume - first.volume)
+    )
+  }
+
+  /**
+   * Absolute Sigmoid normalize dataPoint with index.
+   *
+   * @param index index of dataPoint to normalize.
+   * @return absolute normalized dataPoint.
+   */
+  def dataPointSigmoidNormalizedAbsolute(index: Int): DataPoint = normalizedDataPointAbsolute(list(index), sigmoidNormalizerPriceAbsolute, sigmoidNormalizerVolumeAbsolute)
+
+  /**
+   * Change Sigmoid normalized "dataPoint" with index.
+   * This is not a real dataPoint, only a value holder.
+   *
+   * @param first the first point (according to timestamp)
+   * @param last the second point (according to timestamp)
+   * @return
+   */
+  def dataPointSigmoidNormalizedChange(first: Int, last: Int): DataPoint = normalizedDataPointChange(list(first), list(last), sigmoidNormalizerPriceChange, sigmoidNormalizerVolumeChange)
+
+  /**
+   * Double array with price and volume normalized value for change between the datapoints
+   *
+   * @param first index of the first point in the time series
+   * @param last index of the last point in the time series
+   * @return double array with change between the two dataPoints (last - first), sigmoid normalized
+   */
+  def dataPointSigmoidNormalizedChangeArray(first: Int, last: Int): Array[Double] = {
+    val changeNormalDataPoint = normalizedDataPointChange(list(first), list(last), sigmoidNormalizerPriceChange, sigmoidNormalizerVolumeChange)
+    Array(changeNormalDataPoint.open, changeNormalDataPoint.close, changeNormalDataPoint.low, changeNormalDataPoint.high, changeNormalDataPoint.volume)
+
+  }
+
+  /**
+   * Double array with price and volume normalized value for dataPoint, absolute
+   *
+   * @param index index of dataPoint to normalize
+   * @return double array with absolute sigmoid normalized of dataPoint
+   */
+  def dataPointSigmoidNormalizedAbsoluteArray(index: Int): Array[Double] = {
+    val normalDataPoint = normalizedDataPointAbsolute(list(index), sigmoidNormalizerPriceAbsolute, sigmoidNormalizerVolumeAbsolute)
+    Array(normalDataPoint.open, normalDataPoint.close, normalDataPoint.low, normalDataPoint.high, normalDataPoint.volume)
+  }
+
+  def size = list.length
+
+  def apply(index: Int): DataPoint = list(index)
+
+  def last = list.last
+
+  def first = list(0)
+
+  def iterator = list.iterator
+
+  val fromDate: Date = list(0).date
+
+  val toDate: Date = list.last.date
 
   override def toString = {
     "MarketDataSet from " + fromDate + " to " + toDate + "with: granularity:" +
-      granularity + ", size:" + data.size
+      Granularity + ", size:" + data.size
   }
 
 }

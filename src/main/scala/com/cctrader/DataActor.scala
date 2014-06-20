@@ -1,27 +1,21 @@
 package com.cctrader
 
-import java.io.File
-import java.text.SimpleDateFormat
 import java.util.Date
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data._
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
-import scala.slick.jdbc.{StaticQuery => Q, ResultSetConcurrency}
+import scala.slick.jdbc.{ResultSetConcurrency, StaticQuery => Q}
 
 /**
  *
  */
-class DataActor() extends Actor with ActorLogging {
+class DataActor extends Actor with ActorLogging {
 
   val config = ConfigFactory.load()
-
-
-  val tsCoordinators = context.actorSelection("../*")
-
   val databaseFactory = Database.forURL(
     url = "jdbc:postgresql://" + config.getString("postgres.host") + ":" + config.getString("postgres.port") + "/" + config
       .getString("postgres.dbname"),
@@ -44,7 +38,6 @@ class DataActor() extends Actor with ActorLogging {
   val hour12Table = TableQuery[Hour12Table]
   val dayTable = TableQuery[DayTable]
 
-
   var startTime: Date = {
     val firstRow = tickTable.filter(x => x.id === 1L).take(1)
     val value = firstRow.firstOption map (x => x.date)
@@ -58,240 +51,75 @@ class DataActor() extends Actor with ActorLogging {
     value.get
   }
 
-  log.debug("Data is ready, startTime:" + startTime + ", endTime:" + endTime)
-  tsCoordinators ! DataReady(startTime, endTime)
+  log.debug("ALL AVAILABLE DATA: startTime:" + startTime + ", endTime:" + endTime)
+  context.parent ! DataReady(startTime, endTime)
 
-  def getDataFromDB(requestedData: RequestData): MarketDataSet = {
+  def getDataFromDB(marketDataSettings: MarketDataSettings): MarketDataSet = {
     var minClose = Double.MaxValue
     var maxClose = 0D
     var minVolume = Double.MaxValue
     var maxVolume = 0D
 
-    if (requestedData.granularity == Granularity.min1) {
-      val min1List = min1Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(min1List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    if (marketDataSettings.granularity == Granularity.min1) {
+      val min1List = min1Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(min1List, marketDataSettings)
     }
-    else if (requestedData.granularity == Granularity.min2) {
-      val min2List = min2Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(min2List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.min2) {
+      val min2List = min2Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(min2List, marketDataSettings)
     }
-    else if (requestedData.granularity == Granularity.min5) {
-      val min5List = min5Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(min5List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.min5) {
+      val min5List = min5Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(min5List, marketDataSettings)
     }
 
-    else if (requestedData.granularity == Granularity.min10) {
-      val min10List = min10Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(min10List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.min10) {
+      val min10List = min10Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(min10List, marketDataSettings)
     }
 
-    else if (requestedData.granularity == Granularity.min15) {
-      val min15List = min15Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(min15List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.min15) {
+      val min15List = min15Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(min15List, marketDataSettings)
     }
 
-    else if (requestedData.granularity == Granularity.min30) {
-      val min30List = min30Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(min30List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.min30) {
+      val min30List = min30Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(min30List, marketDataSettings)
     }
 
-    else if (requestedData.granularity == Granularity.hour1) {
-      val hour1List = hour1Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(hour1List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.hour1) {
+      val hour1List = hour1Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(hour1List, marketDataSettings)
     }
-    else if (requestedData.granularity == Granularity.hour2) {
-      val hour2List = hour2Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(hour2List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.hour2) {
+      val hour2List = hour2Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(hour2List, marketDataSettings)
     }
 
-    else if (requestedData.granularity == Granularity.hour5) {
-      val hour5List = hour5Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(hour5List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.hour5) {
+      val hour5List = hour5Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(hour5List, marketDataSettings)
     }
-    else if (requestedData.granularity == Granularity.hour12) {
-      val hour12List = hour12Table.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(hour12List, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.hour12) {
+      val hour12List = hour12Table.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(hour12List, marketDataSettings)
     }
 
-    else if (requestedData.granularity == Granularity.day) {
-      val dayList = dayTable.filter(_.timestamp <= (requestedData.dateNow.getTime /
-        1000).toInt).list.reverse.take(requestedData.numberOfHistoricalPoints).map(x => {
-        if (x.low < minClose) {
-          minClose = x.low
-        }
-        if (x.high > maxClose) {
-          maxClose = x.high
-        }
-        if (x.volume < minVolume) {
-          minVolume = x.volume
-        }
-        if (x.volume > maxVolume) {
-          maxVolume = x.volume
-        }
-        x
-      }).toList
-      MarketDataSet(dayList, requestedData.granularity, requestedData.currencyPair,
-        requestedData.exchange, minClose, maxClose, minVolume, maxVolume)
+    else if (marketDataSettings.granularity == Granularity.day) {
+      val dayList = dayTable.filter(_.timestamp <= (marketDataSettings.startDate.getTime /
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList
+      MarketDataSet(dayList, marketDataSettings)
     }
 
     else {
@@ -302,19 +130,12 @@ class DataActor() extends Actor with ActorLogging {
 
   override def receive: Receive = {
 
-    case request: RequestData =>
+    case request: MarketDataSettings =>
       sender ! getDataFromDB(request)
 
     case "RequestLiveData" =>
       log.error("Retrieved RequestLiveData. But its not implemented.")
 
-    case DataReady(newStartTime: Date, newEndTime: Date) =>
-      if(!sender().equals(self)) {
-        startTime = newStartTime
-        endTime = newEndTime
-        log.debug("New data is ready, startTime:" + startTime + ", endTime:" + endTime)
-        "tsManagerActor ! DataReady(startTime, endTime)"
-      }
   }
 }
 

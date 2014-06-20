@@ -1,6 +1,7 @@
 package com.cctrader
 
 import akka.actor.{Props, ActorSystem}
+import com.cctrader.systems.movingaverage.MovingAverageCoordinatorActor
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -8,15 +9,6 @@ import com.typesafe.config.ConfigFactory
  */
 
 object Boot extends App {
-
-  val config = ConfigFactory.load()
-  val host = config.getString("http.host")
-  val port = config.getInt("http.port")
-
-
-  // ActorSystem to host our application in
   implicit val system = ActorSystem("actor-system")
-
-  val dataActor = system.actorOf(Props[DataActor], "dataActor")
-
+  system.actorOf(Props[MasterActor], "master")
 }

@@ -42,6 +42,19 @@ case class TickDataPoint(
   val date = new Date(timestamp * 1000L)
 }
 
+/**
+ *
+ * @param id my id for the trade, set automatically. Use None for creation
+ * @param writetimestamp the the signal is written to the database
+ * @param dptimestamp time on dataPoint (that lead to the trade)
+ * @param signal BUY, SELL
+ */
+case class Trade(
+                  id: Option[Long],
+                  writetimestamp: Int,
+                  dptimestamp: Int,
+                  signal: String)
+
 
 object Granularity extends Enumeration {
   type Granularity = Value
@@ -73,4 +86,9 @@ object Signal extends Enumeration {
 object CurrencyPair extends Enumeration {
   type CurrencyPair = Value
   val BTC_USD = Value
+}
+
+object Mode extends Enumeration {
+  type Mode = Value
+  val TESTING, LIVE = Value
 }

@@ -1,7 +1,7 @@
 package com.cctrader
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.cctrader.systems.movingaverage.MovingAverageCoordinatorActor
+import com.cctrader.systems.dummy.DummyCoordinatorActor
 
 /**
  *
@@ -13,8 +13,8 @@ class MasterActor extends Actor with ActorLogging {
   def startTradingSystems(dataReady: DataReady): Unit = {
     //all TSCoordinators to run should be listed here
     val tsMovingAverageActor = context.actorOf(
-      MovingAverageCoordinatorActor.props(dataActor, dataReady),
-      "MovingAverage"
+      DummyCoordinatorActor.props(dataActor, dataReady),
+      "Dummy"
     )
   }
 

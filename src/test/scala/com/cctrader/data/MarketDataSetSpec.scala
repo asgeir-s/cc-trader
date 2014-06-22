@@ -23,8 +23,7 @@ class MarketDataSetSpec extends UnitTest {
 
 
 
-  test("Exception should be thrown when the data set is larger then MaxPoints") {
-
+  "Exception" should "be thrown when the data set is larger then MaxPoints" in {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1339539816 * 1000),
       numberOfHistoricalPoints = 3,
@@ -43,7 +42,7 @@ class MarketDataSetSpec extends UnitTest {
     }
   }
 
-  test("Normalizer: change output test") {
+  "Normalizer: change output test" should "!output test!" in {
     println("# Normalizer: change output test")
 
     val marketDataSettings = MarketDataSettings(
@@ -72,7 +71,7 @@ class MarketDataSetSpec extends UnitTest {
     println()
   }
 
-  test("Normalizer: absolute output test") {
+  "Normalizer: absolute output test" should "!output test!" in {
     println("# Normalizer: absolute output test")
 
     val marketDataSettings = MarketDataSettings(

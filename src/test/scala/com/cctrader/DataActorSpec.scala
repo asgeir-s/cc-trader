@@ -16,15 +16,15 @@ class DataActorSpec extends UnitTest {
   val dataActorRef = TestActorRef[DataActor]
   val actor = dataActorRef.underlyingActor
 
-  test("startDate and endDate should be set to the first and last entry, respectfully, in the test-cvs.") {
+  "startDate and endDate" should
+    "be set to the first and last entry, respectfully, in the test-cvs." in {
     println("Start:" + actor.startTime)
     assert(actor.startTime.compareTo(new Date(1315922016L * 1000L)) == 0)
     assert(actor.endTime.after(new Date(1403173902L * 1000L)))
   }
 
-  test("readFromDB should not return ant data outside of the specified time interval, " +
-    "for Granularity.min1") {
-
+  "readFromDB" should
+    "not return ant data outside of the specified time interval, for Granularity.min1" in {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1325922016L * 1000L),
       numberOfHistoricalPoints = 100,
@@ -57,9 +57,8 @@ class DataActorSpec extends UnitTest {
 
   }
 
-  test("readFromDB should not return ant data outside of the specified time interval, " +
-    "for Granularity.min30") {
-
+  "readFromDB" should
+    "not return ant data outside of the specified time interval, for Granularity.min30" in {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1325922016L * 1000L),
       numberOfHistoricalPoints = 100,
@@ -91,8 +90,8 @@ class DataActorSpec extends UnitTest {
 
   }
 
-  test("readFromDB should not return ant data outside of the specified time interval, " +
-    "for Granularity.day") {
+  "readFromDB" should
+    "not return ant data outside of the specified time interval, for Granularity.day" in {
 
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1325922016L * 1000L),
@@ -125,7 +124,7 @@ class DataActorSpec extends UnitTest {
 
   }
 
-  test("The returned Datapoints from request data should be the numberOfHistorical points before") {
+  "The returned DataPoints from request data" should "be the numberOfHistorical points before" in {
 
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1335225456L * 1000L),

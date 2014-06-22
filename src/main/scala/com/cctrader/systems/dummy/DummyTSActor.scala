@@ -8,7 +8,9 @@ import com.cctrader.data._
 import scala.slick.jdbc.{StaticQuery => Q}
 
 /**
+ * Shows how to implement a TradingSystemActor.
  *
+ * And used for testing of the TradingSystemActor trait.
  */
 class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter) extends {
   val signalWriter = signalWriterIn

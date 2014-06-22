@@ -7,7 +7,9 @@ import com.cctrader.data.{MarketDataSet, CurrencyPair, Exchange, Granularity}
 import com.cctrader.{DataReady, MarketDataSettings, TSCoordinatorActor}
 
 /**
+ * Shows how to implement a TSCoordinatorActor.
  *
+ * And used for testing of the TSCoordinator trait.
  */
 class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) extends {
   val name = "Dummy"
@@ -19,6 +21,7 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   val sigmoidNormalizerScale = 20
   var nextSystemReady: Boolean = false
   val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 100
+  val signalWriter = new SignalWriter(name + "trades")
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemTime,
@@ -33,14 +36,10 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
     MinVolume = 0,
     MaxVolume = 1000000
   )
-
 } with TSCoordinatorActor {
 
   def tsProps = DummyTSActor.props(MarketDataSet(marketDataSet.iterator.toList, marketDataSet.settings), signalWriter)
 
-  var tradingSystemActor: ActorRef = _
-  val signalWriter = new SignalWriter(name + "trades")
-  var nextTradingSystem: ActorRef = _
 }
 
 object DummyCoordinatorActor {

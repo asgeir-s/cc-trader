@@ -19,8 +19,8 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   val name: String
   val dataAvailable: DataReady
   val dataActor: ActorRef
-  var tradingSystemActor: ActorRef
-  var nextTradingSystem: ActorRef
+  var tradingSystemActor: ActorRef = _
+  var nextTradingSystem: ActorRef = _
   var tradingSystemTime: Date
   val marketDataSettings: MarketDataSettings
   var mode = Mode.TESTING
@@ -38,6 +38,11 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
 
   dataActor ! marketDataSettings
 
+  /**
+   * Should define the TradingSystemActors props.
+   * Ex: DummyTSActor.props(MarketDataSet(marketDataSet.iterator.toList, marketDataSet.settings), signalWriter)
+   * @return the props to use when creating an instance of the tradingSystemActor
+   */
   def tsProps: Props
 
   implicit val timeout = Timeout(10 minutes)

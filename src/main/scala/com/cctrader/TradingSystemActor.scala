@@ -20,7 +20,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
   /**
    * Train the system.
    * If the system does not need training, return 0
-   * @return unixTimestamp for training duration. Timestamp at end of training - start timestamp.
+   * @return timestamp in milliseconds for training duration. Timestamp at end of training - start timestamp.
    */
   def train(): Long
 

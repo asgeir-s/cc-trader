@@ -12,7 +12,7 @@ class MasterActor extends Actor with ActorLogging {
 
   def startTradingSystems(dataReady: DataReady): Unit = {
     //all TSCoordinators to run should be listed here
-    val tsMovingAverageActor = context.actorOf(
+    val dummyCoordinatorActor = context.actorOf(
       DummyCoordinatorActor.props(dataActor, dataReady),
       "Dummy"
     )

@@ -22,7 +22,7 @@ import scala.collection.mutable.ListBuffer
 case class MarketDataSet(private val data: List[DataPoint], settings: MarketDataSettings) {
 
   if (settings.numberOfHistoricalPoints < data.length) {
-    throw new Exception("dataPoint list is bigger then maxSize.")
+    throw new Exception("dataPoint list size:" + data.size + " is bigger then maxSize:" + settings.numberOfHistoricalPoints)
   }
 
   val sigmoid = new Sigmoid(-1.0, 1.0)
@@ -35,6 +35,7 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
    * @param dataPoint to be added
    */
   def addDataPoint(dataPoint: DataPoint) {
+    println("Add ne dp to marketDataSet:" + dataPoint + ". Size is:" + size)
     if (dataPoint.low < settings.MinPrice) {
       throw new Exception("dataPoint price is lower then minPrice:" + settings.MinPrice + ".")
     }
@@ -179,6 +180,8 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
   def last = list.last
 
   def first = list(0)
+
+  def getList = list
 
   def iterator = list.iterator
 

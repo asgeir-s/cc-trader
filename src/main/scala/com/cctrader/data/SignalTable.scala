@@ -1,14 +1,10 @@
 package com.cctrader.data
 
-package net.sognefest.data.collector.bitatamp
-
-import com.cctrader.data.{DPTable, TickDataPoint, DataPoint}
-
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.{StaticQuery => Q}
 
 /**
- *  Trade as written to the trade table
+ * Trade as written to the trade table
  */
 
 trait SignalTable {

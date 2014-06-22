@@ -4,9 +4,9 @@ import java.util.Date
 
 import akka.actor.ActorRef
 import com.cctrader.data.CurrencyPair._
-import com.cctrader.data.{MarketDataSet, DataPoint}
 import com.cctrader.data.Exchange._
 import com.cctrader.data.Granularity.Granularity
+import com.cctrader.data.MarketDataSet
 
 /**
  *
@@ -38,7 +38,7 @@ case class MarketDataSettings(
 
 case class DataReady(fromDate: Date, toDate: Date)
 
-case class TrainingDone(trainingTimeInMilliSec: Int)
+case class TrainingDone(trainingTimeInMilliSec: Long)
 
 case class RequestLiveData(fromDate: Date)
 

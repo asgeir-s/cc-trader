@@ -5,7 +5,6 @@ import java.util.Date
 import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data._
 import com.typesafe.config.ConfigFactory
-import net.sognefest.data.collector.bitatamp._
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
@@ -58,6 +57,9 @@ class DataActor extends Actor with ActorLogging {
   context.parent ! DataReady(startTime, endTime)
 
   def getDataFromDB(marketDataSettings: MarketDataSettings): MarketDataSet = {
+    if (marketDataSettings.startDate.before(startTime)) {
+      log.error("market data startTime is before startTime in the database")
+    }
     MarketDataSet(
       tableMap(marketDataSettings.granularity).filter(_.timestamp <= (marketDataSettings.startDate.getTime /
         1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList,

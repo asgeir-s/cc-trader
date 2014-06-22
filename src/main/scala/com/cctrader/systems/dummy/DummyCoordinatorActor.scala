@@ -2,9 +2,9 @@ package com.cctrader.systems.dummy
 
 import java.util.Date
 
-import akka.actor.{Props, ActorRef}
-import com.cctrader.data.{MarketDataSet, Exchange, CurrencyPair, Granularity}
-import com.cctrader.{Initialize, TSCoordinatorActor, DataReady, MarketDataSettings}
+import akka.actor.{ActorRef, Props}
+import com.cctrader.data.{MarketDataSet, CurrencyPair, Exchange, Granularity}
+import com.cctrader.{DataReady, MarketDataSettings, TSCoordinatorActor}
 
 /**
  *
@@ -14,16 +14,16 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   val dataAvailable = dataAvailableIn
   val dataActor = dataActorIn
   var tradingSystemTime = new Date(1339539816L * 1000L)
-  val numberOfLivePointsAtTheTimeForBackTest = 5
+  val numberOfLivePointsAtTheTimeForBackTest = 100
   var transferToNextSystemDate: Date = new Date(0)
-  val sigmoidNormalizerScale = 100
+  val sigmoidNormalizerScale = 20
   var nextSystemReady: Boolean = false
-  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 10
+  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 100
 
   val marketDataSettings = MarketDataSettings(
-    startDate = new Date(8L),
-    numberOfHistoricalPoints = 8,
-    granularity = Granularity.min5,
+    startDate = tradingSystemTime,
+    numberOfHistoricalPoints = 100,
+    granularity = Granularity.day,
     currencyPair = CurrencyPair.BTC_USD,
     exchange = Exchange.bitstamp,
     PriceChangeScale = 50,
@@ -31,12 +31,12 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
     MinPrice = 0,
     MaxPrice = 1500,
     MinVolume = 0,
-    MaxVolume = 10000
+    MaxVolume = 1000000
   )
 
 } with TSCoordinatorActor {
 
-  def tsProps = DummyTSActor.props(marketDataSet, signalWriter)
+  def tsProps = DummyTSActor.props(MarketDataSet(marketDataSet.iterator.toList, marketDataSet.settings), signalWriter)
 
   var tradingSystemActor: ActorRef = _
   val signalWriter = new SignalWriter(name + "trades")

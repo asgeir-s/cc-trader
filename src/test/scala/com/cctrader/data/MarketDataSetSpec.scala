@@ -2,8 +2,7 @@ package com.cctrader.data
 
 import java.util.Date
 
-import com.cctrader.{UnitTest, MarketDataSettings}
-import org.scalatest.FunSuite
+import com.cctrader.{MarketDataSettings, UnitTest}
 
 /**
  *
@@ -20,7 +19,6 @@ class MarketDataSetSpec extends UnitTest {
     DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 405D, 5D, 5D, 5D, 50D),
     DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D)
   )
-
 
 
   "Exception" should "be thrown when the data set is larger then MaxPoints" in {
@@ -100,4 +98,37 @@ class MarketDataSetSpec extends UnitTest {
     println("Value:" + marketDataSet(7).open + ", normalized:" + marketDataSet.dataPointSigmoidNormalizedAbsoluteArray(7)(0))
     println()
   }
+
+  "When more dataPoints then maxPoint (numberOfHistoricalPoints in settings) is added the list" should
+    "not grow, but insted remove the oldest point" in {
+    val smallDataPointList = List(
+      DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D),
+      DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 550D, 5D, 5D, 5D, 50D)
+    )
+
+    val marketDataSettings = MarketDataSettings(
+      startDate = new Date(1339539816 * 1000),
+      numberOfHistoricalPoints = 3,
+      granularity = Granularity.min5,
+      currencyPair = CurrencyPair.BTC_USD,
+      exchange = Exchange.bitstamp,
+      PriceChangeScale = 50,
+      VolumeChangeScale = 1000,
+      MinPrice = 0,
+      MaxPrice = 1500,
+      MinVolume = 0,
+      MaxVolume = 10000
+    )
+
+    val marketDataSet = MarketDataSet(smallDataPointList, marketDataSettings)
+    marketDataSet.size should be(2)
+    marketDataSet.addDataPoint(DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    marketDataSet.size should be(3)
+    marketDataSet.addDataPoint(DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 400D, 5D, 5D, 5D, 50D))
+    marketDataSet.size should be(3)
+    marketDataSet.addDataPoint(DataPoint(None, None, (new Date(1L).getTime / 1000).toInt, 300D, 5D, 5D, 5D, 50D))
+    marketDataSet.size should be(3)
+
+  }
+
 }

@@ -1,7 +1,7 @@
 package com.cctrader.data
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.cctrader.{MarketDataSettings, RequestLiveBTData, RequestLiveData}
+import com.cctrader.{MarketDataSettings, RequestLiveBTData}
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.{StaticQuery => Q}
@@ -58,22 +58,22 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings) 
   override def receive: Receive = {
     case RequestLiveBTData(tradingSystemTime, numOfPoints) =>
       log.debug("Received: RequestLiveBTData. End time:" + tradingSystemTime)
-      val idOfLastDataPoint = table.list.last.id
-      val dataPointsToReturn = table.filter(_.timestamp <= (tradingSystemTime.getTime / 1000L).toInt).take(numOfPoints).list
+      val idOfLastDataPoint = table.list.last.id.get
+      val dataPointsToReturn = table.filter(_.timestamp >= (tradingSystemTime.getTime / 1000L).toInt).take(numOfPoints).list
       dataPointsToReturn.foreach(x => {
         sender() ! x
         println("sending:" + x)
-        if (x.id == idOfLastDataPoint) {
+        if (x.id.get == idOfLastDataPoint) {
           sender() ! Mode.LIVE
           live = true
+          // LIVE
+          log.info("WE GO LIVE!")
+          while (true) {
+            //check for new dataPoints and send them to sender
+          }
         }
       })
       log.debug("Finished processing: RequestLiveBTData, return size:" + dataPointsToReturn.size)
-
-    case RequestLiveData(tradingSystemTime) =>
-      while(true) {
-        //check for new dataPoints and send them to sender
-      }
 
   }
 }

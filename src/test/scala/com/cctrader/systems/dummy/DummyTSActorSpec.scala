@@ -13,7 +13,7 @@ import scala.concurrent.duration._
  *
  */
 class DummyTSActorSpec extends UnitTest {
-  
+
   implicit val timeout = Timeout(1 second)
 
   val dataPointList = List(
@@ -63,14 +63,14 @@ class DummyTSActorSpec extends UnitTest {
   val marketDataSet2 = MarketDataSet(dataPointList2, marketDataSettings2)
 
   val tsCoordinatorProbe = TestProbe()
-  
+
   val dummyTSActorRef = TestActorRef(new DummyTSActor(marketDataSet, new SignalWriter("DummyTest")))
   val dummyTSActor = dummyTSActorRef.underlyingActor
 
   "When the actor receive StartTraining message it" should "train the actor" in {
     tsCoordinatorProbe.send(dummyTSActorRef, StartTraining(marketDataSet))
     val trainingTime = tsCoordinatorProbe.expectMsgType[TrainingDone]
-    trainingTime.trainingTimeInMilliSec should equal(100)
+    trainingTime.trainingTimeInMilliSec should equal(100L * 1000L)
   }
 
   "When receiving marketDataSett training" should "not start" in {
@@ -79,9 +79,9 @@ class DummyTSActorSpec extends UnitTest {
   }
 
   it should "switch the old marketDataSet with the new" in {
-    dummyTSActor.marketDataSet should equal (marketDataSet)
+    dummyTSActor.marketDataSet should equal(marketDataSet)
     tsCoordinatorProbe.send(dummyTSActorRef, marketDataSet2)
-    dummyTSActor.marketDataSet should equal (marketDataSet2)
+    dummyTSActor.marketDataSet should equal(marketDataSet2)
   }
 
   "When receiving dataPoint after training is done it" should "increase the dataPoinCount" in {

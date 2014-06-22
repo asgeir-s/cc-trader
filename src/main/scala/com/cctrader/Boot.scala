@@ -1,8 +1,6 @@
 package com.cctrader
 
-import akka.actor.{Props, ActorSystem}
-import com.cctrader.systems.movingaverage.MovingAverageCoordinatorActor
-import com.typesafe.config.ConfigFactory
+import akka.actor.{ActorSystem, Props}
 
 /**
  * Used to start the actor system

@@ -1,8 +1,8 @@
 package com.cctrader
 
-import akka.actor.{ActorRef, Actor, ActorLogging}
+import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data.Signal.Signal
-import com.cctrader.data.{Mode, DataPoint, MarketDataSet, SignalWriterTrait}
+import com.cctrader.data.{DataPoint, MarketDataSet, Mode, SignalWriterTrait}
 
 /**
  *
@@ -14,12 +14,15 @@ trait TradingSystemActor extends Actor with ActorLogging {
   var mode = Mode.TESTING
   var marketDataSet: MarketDataSet
 
+  log.debug("Started: TradingSystemActor")
+
+
   /**
    * Train the system.
    * If the system does not need training, return 0
    * @return unixTimestamp for training duration. Timestamp at end of training - start timestamp.
    */
-  def train(): Int
+  def train(): Long
 
   /**
    * Evaluate new dataPoint.
@@ -31,9 +34,11 @@ trait TradingSystemActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     case StartTraining(marketDataSetIn: MarketDataSet) =>
+      log.debug("Received: StartTraining")
       marketDataSet = marketDataSetIn
       val trainingTime = train()
       sender ! TrainingDone(trainingTime)
+      log.debug("Training done")
 
     case marketDataSetIn: MarketDataSet =>
       marketDataSet = marketDataSetIn
@@ -41,6 +46,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
         + ", toDate" + marketDataSetIn.toDate)
 
     case dataPoint: DataPoint =>
+      log.debug("Received DataPoint: time:" + dataPoint.date + ", info:" + dataPoint)
       marketDataSet.addDataPoint(dataPoint)
       signalWriter.newSignal(newDataPoint(), dataPoint) //compute dataPoint and write to database
 

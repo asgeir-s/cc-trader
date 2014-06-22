@@ -1,9 +1,7 @@
 package com.cctrader.systems.dummy
 
-import akka.actor.ActorLogging
 import com.cctrader.data.Signal.Signal
-import com.cctrader.data.net.sognefest.data.collector.bitatamp.SignalTable
-import com.cctrader.data.{DataPoint, Signal, SignalWriterTrait, Trade}
+import com.cctrader.data.{SignalTable, DataPoint, SignalWriterTrait, Trade}
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.meta.MTable
@@ -12,7 +10,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
 /**
  *
  */
-class SignalWriter(name: String) extends SignalWriterTrait{
+class SignalWriter(name: String) extends SignalWriterTrait {
 
   val table = TableQuery[MASignalTable]
   if (makeTableMap.contains(name)) {
@@ -31,5 +29,6 @@ class SignalWriter(name: String) extends SignalWriterTrait{
   }
 
   class MASignalTable(tag: Tag) extends Table[Trade](tag, name) with SignalTable {def * = common_*}
+
 }
 

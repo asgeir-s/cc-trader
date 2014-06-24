@@ -54,6 +54,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   def startAndTrainNewSystem(marketDataSetForTraining: MarketDataSet) {
     countTradingSystemsUsed = countTradingSystemsUsed + 1
     // starting a new system
+    log.debug("Start and train, nextTradingSystem actor")
     nextTradingSystem = startTradingSystemActor
     if (mode == Mode.TESTING) {
       //wait for training to complete
@@ -65,7 +66,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     }
     else {
       // LIVE
-      StartTraining(marketDataSetForTraining)
+      nextTradingSystem ! StartTraining(marketDataSetForTraining)
       nextTradingSystem ! Mode.LIVE
     }
     // if this is the first system
@@ -92,7 +93,6 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     case trainingDone: TrainingDone =>
       // some system is finished with training and ready to start trading
       // this is only used when mode is LIVE, else the startAndTrainNewSystem is awaiting this message
-      nextTradingSystem = sender()
       nextSystemReady = true
 
     case newDataPoint: DataPoint =>
@@ -103,25 +103,27 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
       messageDPCount = messageDPCount + 1
       tradingSystemTime = newDataPoint.date
       marketDataSet.addDataPoint(newDataPoint)
-      numberOfPointsProcessedByCurrentSystem = numberOfPointsProcessedByCurrentSystem + 1
 
+      // start using nextSystem and kill old
       if (nextSystemReady && (mode == Mode.LIVE || newDataPoint.date.after(transferToNextSystemDate))) {
         if (hasRunningTS) {
+          log.debug("Sending PoisonPill to (current) tradingSystem")
           tradingSystemActor ! PoisonPill
         }
+        log.debug("Transferring to nextTradingSystemActor")
         tradingSystemActor = nextTradingSystem
         tradingSystemActor ! AkkOn(numberOfLivePointsAtTheTimeForBackTest, messageDPCount)
         tradingSystemActor ! newCopyOfMarketDataSet(marketDataSet)
         numberOfPointsProcessedByCurrentSystem = 0
-        hasRunningTS = true
-
         nextSystemReady = false
         hasRunningTS = true
       }
       if (numberOfPointsProcessedByCurrentSystem == tsNumberOfPointsToProcessBeforeStartTrainingNewSystem) {
+        log.debug("Starts a new tradingSystem")
         startAndTrainNewSystem(newCopyOfMarketDataSet(marketDataSet))
       }
       if (hasRunningTS) {
+        numberOfPointsProcessedByCurrentSystem = numberOfPointsProcessedByCurrentSystem + 1
         tradingSystemActor ! newDataPoint
       }
 

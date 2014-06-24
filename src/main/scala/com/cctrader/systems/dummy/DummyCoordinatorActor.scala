@@ -20,7 +20,7 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   var transferToNextSystemDate: Date = new Date(0)
   val sigmoidNormalizerScale = 20
   var nextSystemReady: Boolean = false
-  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 100
+  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 5 // test depends on this
   val signalWriter = new SignalWriter(name + "trades")
 
   val marketDataSettings = MarketDataSettings(

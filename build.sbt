@@ -1,4 +1,4 @@
-organization  := "net.sognefest"
+organization  := "com.cctrader"
 
 name := "CCTrader"
 

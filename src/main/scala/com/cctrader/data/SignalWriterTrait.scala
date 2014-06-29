@@ -4,6 +4,7 @@ import com.cctrader.data.Signal._
 import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._
+import scala.slick.jdbc.meta.MTable
 import scala.slick.jdbc.{StaticQuery => Q}
 
 /**
@@ -11,6 +12,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
  */
 trait SignalWriterTrait {
 
+  val dbName: String
   val config = ConfigFactory.load()
 
   val databaseFactory = Database.forURL(
@@ -22,7 +24,29 @@ trait SignalWriterTrait {
 
   implicit val session = databaseFactory.createSession()
 
+  val table = TableQuery[MASignalTable]
+  if (makeTableMap.contains(dbName)) {
+    table.ddl.drop
+  }
+  table.ddl.create
 
-  def newSignal(signal: Signal, dataPoint: DataPoint)
+  def newSignal(signal: Signal, dataPoint: DataPoint) {
+    //if(!signal.equals(Signal.SAME)){
+    table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
+    //}
+    // notify new trades (should this only happen live??)
+    Q.updateNA("NOTIFY " + dbName  + " , '" + table.list.last.id + "'").execute
+
+    println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
+  }
+
+  def makeTableMap: Map[String, MTable] = {
+    val tableList = MTable.getTables.list(session)
+    val tableMap = tableList.map { t => (t.name.name, t)}.toMap
+    tableMap
+  }
+
+  class MASignalTable(tag: Tag) extends Table[Trade](tag, dbName) with SignalTable {def * = common_*}
+
 
 }

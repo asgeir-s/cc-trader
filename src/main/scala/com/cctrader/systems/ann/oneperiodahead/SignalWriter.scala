@@ -1,4 +1,4 @@
-package com.cctrader.systems.movingaverage
+package com.cctrader.systems.ann.oneperiodahead
 
 import com.cctrader.data.Signal.Signal
 import com.cctrader.data._
@@ -19,9 +19,10 @@ class SignalWriter(name: String) extends SignalWriterTrait {
   table.ddl.create
 
   def newSignal(signal: Signal, dataPoint: DataPoint) {
-    if (signal != Signal.SAME) {
-      table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
-    }
+    //if(!signal.equals(Signal.SAME)){
+      table += Trade(None, (System.currentTimeMillis()/ 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
+    //}
+    println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
   }
 
   def makeTableMap: Map[String, MTable] = {

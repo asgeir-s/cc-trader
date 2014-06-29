@@ -71,7 +71,7 @@ class DataActor extends Actor with ActorLogging {
 
     case marketDataSettings: MarketDataSettings =>
       log.info("Received: MarketDataSettings: getting data from database and sending back. MarketDataSettings:" + marketDataSettings)
-      sender ! Initialize(getDataFromDB(marketDataSettings), context.actorOf(LiveDataActor.props(databaseFactory.createSession(), marketDataSettings), "live-data-" + marketDataSettings.exchange + "-" + marketDataSettings.granularity))
+      sender ! Initialize(getDataFromDB(marketDataSettings), context.actorOf(LiveDataActor.props(databaseFactory.createSession(), marketDataSettings)))
   }
 }
 

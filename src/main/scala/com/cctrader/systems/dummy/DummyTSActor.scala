@@ -36,11 +36,11 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalW
   override def newDataPoint(): Signal = {
     if (sell) {
       sell = false
-      Signal.SELL
+      Signal.DOWN
     }
     else {
       sell = true
-      Signal.BUY
+      Signal.UP
     }
   }
 }

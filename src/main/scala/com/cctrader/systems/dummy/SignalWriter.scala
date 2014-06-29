@@ -1,7 +1,8 @@
 package com.cctrader.systems.dummy
 
 import com.cctrader.data.Signal.Signal
-import com.cctrader.data.{SignalTable, DataPoint, SignalWriterTrait, Trade}
+import com.cctrader.data.Signal._
+import com.cctrader.data._
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.meta.MTable
@@ -19,7 +20,10 @@ class SignalWriter(name: String) extends SignalWriterTrait {
   table.ddl.create
 
   def newSignal(signal: Signal, dataPoint: DataPoint) {
-    println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
+    if(!signal.equals(Signal.SAME)) {
+      table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
+      println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
+    }
   }
 
   def makeTableMap: Map[String, MTable] = {

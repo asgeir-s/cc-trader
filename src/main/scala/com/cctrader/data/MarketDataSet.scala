@@ -4,6 +4,7 @@ import java.util.Date
 
 import com.cctrader.MarketDataSettings
 import org.apache.commons.math3.analysis.function.Sigmoid
+import org.encog.ml.data.basic.BasicMLData
 
 import scala.collection.mutable.ListBuffer
 
@@ -171,6 +172,17 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
   def dataPointSigmoidNormalizedAbsoluteArray(index: Int): Array[Double] = {
     val normalDataPoint = normalizedDataPointAbsolute(list(index), sigmoidNormalizerPriceAbsolute, sigmoidNormalizerVolumeAbsolute)
     Array(normalDataPoint.open, normalDataPoint.close, normalDataPoint.low, normalDataPoint.high, normalDataPoint.volume)
+  }
+
+
+  /**
+   *
+   * @param fromIndex start index (from current marketDataSet)
+   * @param toIndex end index (from current marketDataSet)
+   * @return the new marketData set, with the same settings as this
+   */
+  def subset(fromIndex: Int, toIndex: Int) = {
+    MarketDataSet(list.slice(fromIndex, toIndex).toList, settings)
   }
 
   def size = list.length

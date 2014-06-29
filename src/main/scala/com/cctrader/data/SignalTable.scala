@@ -18,6 +18,8 @@ trait SignalTable {
 
   def signal = column[String]("signal")
 
+  def price = column[Double]("price")
+
   // Every table needs a * projection with the same type as the table's type parameter
-  protected val common_* = (id, writetimestamp, dptimestamp, signal) <>(Trade.tupled, Trade.unapply)
+  protected val common_* = (id, writetimestamp, dptimestamp, signal, price) <>(Trade.tupled, Trade.unapply)
 }

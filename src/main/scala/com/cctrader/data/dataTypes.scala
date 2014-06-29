@@ -53,7 +53,8 @@ case class Trade(
                   id: Option[Long],
                   writetimestamp: Int,
                   dptimestamp: Int,
-                  signal: String)
+                  signal: String,
+                  price: Double)
 
 
 object Granularity extends Enumeration {
@@ -80,7 +81,7 @@ object Exchange extends Enumeration {
 
 object Signal extends Enumeration {
   type Signal = Value
-  val BUY, SELL, HOLD = Value
+  val UP, DOWN, SAME = Value
 }
 
 object CurrencyPair extends Enumeration {

@@ -47,7 +47,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
 
   implicit val timeout = Timeout(10 minutes)
 
-  def startTradingSystemActor: ActorRef = context.actorOf(tsProps, "trading-system" + countTradingSystemsUsed)
+  def startTradingSystemActor: ActorRef = context.actorOf(tsProps, name + "-ts-" + countTradingSystemsUsed)
 
   def newCopyOfMarketDataSet(setToCopy: MarketDataSet): MarketDataSet = MarketDataSet(setToCopy.list.clone().toList, setToCopy.settings.copy())
 

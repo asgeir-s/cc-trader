@@ -38,7 +38,7 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   )
 } with TSCoordinatorActor {
 
-  def tsProps = DummyTSActor.props(MarketDataSet(marketDataSet.iterator.toList, marketDataSet.settings), signalWriter)
+  def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter)
 
 }
 

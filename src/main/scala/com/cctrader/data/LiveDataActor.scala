@@ -1,7 +1,13 @@
 package com.cctrader.data
 
-import akka.actor.{Actor, ActorLogging, Props}
+
+import java.sql.Statement
+
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.cctrader.{MarketDataSettings, RequestLiveBTData}
+import com.impossibl.postgres.api.jdbc.{PGConnection, PGNotificationListener}
+import com.impossibl.postgres.jdbc.PGDataSource
+import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.{StaticQuery => Q}
@@ -55,24 +61,58 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings) 
     }
   }
 
+  def getDataSource: PGDataSource = {
+    val config = ConfigFactory.load()
+
+    val basicDataSource = new PGDataSource();
+    basicDataSource.setPort(config.getString("postgres.port").toInt)
+    basicDataSource.setDatabase(config.getString("postgres.dbname"))
+    basicDataSource.setUser(config.getString("postgres.user"))
+    basicDataSource.setPassword(config.getString("postgres.password"))
+
+    basicDataSource;
+  }
+
+  def liveData(sendTo: ActorRef) {
+    sendTo ! Mode.LIVE
+    log.info("WE GO LIVE!")
+
+    //listen for new dataPoints
+    // send new dataPoints to sendTo
+    val dataSource: PGDataSource = getDataSource
+    val pgConnection: PGConnection = dataSource.getConnection.asInstanceOf[PGConnection]
+
+    pgConnection.addNotificationListener(new PGNotificationListener() {
+      @Override
+      override def notification(processId: Int, granularity: String, newId: String) {
+        println("New entry in the db. granularity:" + granularity + ", newId:" + newId)
+        // newId is database id. USe it to retrieve the new row
+        val newDataPoint: DataPoint = table.filter(_.id === newId.toLong).list.last
+        sendTo ! newDataPoint
+      }
+    })
+
+    val statement: Statement = pgConnection.createStatement()
+    statement.addBatch("LISTEN " + marketDataSettings.granularity.toString)
+    statement.executeBatch()
+    statement.close()
+  }
+
   override def receive: Receive = {
     case RequestLiveBTData(tradingSystemTime, numOfPoints) =>
       log.debug("Received: RequestLiveBTData. End time:" + tradingSystemTime)
       val idOfLastDataPoint = table.list.last.id.get
       val dataPointsToReturn = table.filter(_.timestamp >= (tradingSystemTime.getTime / 1000L).toInt).take(numOfPoints).list
       dataPointsToReturn.foreach(x => {
-        sender() ! x
+        sender ! x
         println("sending:" + x)
         if (x.id.get == idOfLastDataPoint) {
-          sender() ! Mode.LIVE
           live = true
-          // LIVE
-          log.info("WE GO LIVE!")
-          while (true) {
-            //check for new dataPoints and send them to sender
-          }
         }
       })
+      if (live) {
+        liveData(sender)
+      }
       log.debug("Finished processing: RequestLiveBTData, return size:" + dataPointsToReturn.size)
 
   }

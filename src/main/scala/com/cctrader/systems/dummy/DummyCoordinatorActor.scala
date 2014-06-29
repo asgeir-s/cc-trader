@@ -3,7 +3,7 @@ package com.cctrader.systems.dummy
 import java.util.Date
 
 import akka.actor.{ActorRef, Props}
-import com.cctrader.data.{MarketDataSet, CurrencyPair, Exchange, Granularity}
+import com.cctrader.data._
 import com.cctrader.{DataReady, MarketDataSettings, TSCoordinatorActor}
 
 /**
@@ -46,3 +46,5 @@ object DummyCoordinatorActor {
   def props(dataActor: ActorRef, dataReady: DataReady): Props =
     Props(new DummyCoordinatorActor(dataActor, dataReady))
 }
+
+class SignalWriter(name: String) extends {val dbName = "dummy"} with SignalWriterTrait

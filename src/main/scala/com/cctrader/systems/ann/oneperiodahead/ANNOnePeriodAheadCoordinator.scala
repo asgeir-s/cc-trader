@@ -3,7 +3,7 @@ package com.cctrader.systems.ann.oneperiodahead
 import java.util.Date
 
 import akka.actor.{Props, ActorRef}
-import com.cctrader.data.{MarketDataSet, Exchange, CurrencyPair, Granularity}
+import com.cctrader.data._
 import com.cctrader.systems.dummy.{DummyTSActor, SignalWriter}
 import com.cctrader.{MarketDataSettings, DataReady, TSCoordinatorActor}
 
@@ -45,3 +45,4 @@ object ANNOnePeriodAheadCoordinator {
   def props(dataActor: ActorRef, dataReady: DataReady): Props =
     Props(new ANNOnePeriodAheadCoordinator(dataActor, dataReady))
 }
+

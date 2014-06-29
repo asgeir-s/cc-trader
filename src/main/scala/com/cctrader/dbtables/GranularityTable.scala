@@ -1,4 +1,6 @@
-package com.cctrader.data
+package com.cctrader.dbtables
+
+import com.cctrader.data.DataPoint
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.{StaticQuery => Q}
@@ -7,7 +9,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
 /**
  *
  */
-trait DPTable {
+trait GranularityTable {
   this: Table[_] =>
   def id = column[Option[Long]]("id", O.PrimaryKey, O.AutoInc)
 

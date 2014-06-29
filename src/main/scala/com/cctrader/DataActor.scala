@@ -4,6 +4,7 @@ import java.util.Date
 
 import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data._
+import com.cctrader.dbtables._
 import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._

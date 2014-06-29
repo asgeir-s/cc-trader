@@ -4,6 +4,7 @@ package com.cctrader.data
 import java.sql.Statement
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import com.cctrader.dbtables._
 import com.cctrader.{MarketDataSettings, RequestLiveBTData}
 import com.impossibl.postgres.api.jdbc.{PGConnection, PGNotificationListener}
 import com.impossibl.postgres.jdbc.PGDataSource

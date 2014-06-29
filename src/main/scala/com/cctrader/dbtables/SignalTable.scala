@@ -1,4 +1,6 @@
-package com.cctrader.data
+package com.cctrader.dbtables
+
+import com.cctrader.data.Trade
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.{StaticQuery => Q}

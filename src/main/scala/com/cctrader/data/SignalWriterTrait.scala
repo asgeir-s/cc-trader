@@ -1,6 +1,7 @@
 package com.cctrader.data
 
 import com.cctrader.data.Signal._
+import com.cctrader.dbtables.SignalTable
 import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._
@@ -17,7 +18,7 @@ trait SignalWriterTrait {
 
   val databaseFactory = Database.forURL(
     url = "jdbc:postgresql://" + config.getString("postgres.host") + ":" + config.getString("postgres.port") + "/" + config
-      .getString("postgres.dbname"),
+      .getString("postgres.trader.dbname"),
     driver = config.getString("postgres.driver"),
     user = config.getString("postgres.user"),
     password = config.getString("postgres.password"))

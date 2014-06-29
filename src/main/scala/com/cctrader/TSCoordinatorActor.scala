@@ -6,9 +6,20 @@ import akka.actor._
 import akka.pattern.ask
 import akka.util.Timeout
 import com.cctrader.data._
+import com.cctrader.dbtables.{TSInfo, TSTable}
+import com.typesafe.config.ConfigFactory
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import scala.slick.driver.PostgresDriver.simple._
+import scala.slick.jdbc.meta.MTable
+import scala.slick.jdbc.{StaticQuery => Q}
+import com.cctrader.data.Signal.Signal
+import com.cctrader.data._
+
+import scala.slick.driver.PostgresDriver.simple._
+import scala.slick.jdbc.meta.MTable
+import scala.slick.jdbc.{StaticQuery => Q}
 
 /**
  *
@@ -36,6 +47,26 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   var messageDPCount = 0
   var countTradingSystemsUsed = 0
 
+  val config = ConfigFactory.load()
+
+  val databaseFactory = Database.forURL(
+    url = "jdbc:postgresql://" + config.getString("postgres.host") + ":" + config.getString("postgres.port") + "/" + config
+      .getString("postgres.trader.dbname"),
+    driver = config.getString("postgres.driver"),
+    user = config.getString("postgres.user"),
+    password = config.getString("postgres.password"))
+
+  implicit val session = databaseFactory.createSession()
+
+  val tsTable = TableQuery[TSTable]
+  if (!makeTableMap.contains("tsinfo")) {
+    tsTable.ddl.create
+  }
+
+  tsTable.filter(p => p.name === name).delete
+  tsTable += TSInfo(None, name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.numberOfHistoricalPoints, marketDataSettings.granularity.toString, marketDataSettings.currencyPair.toString, marketDataSettings.exchange.toString)
+
+
   dataActor ! marketDataSettings
 
   /**
@@ -46,6 +77,12 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   def tsProps: Props
 
   implicit val timeout = Timeout(10 minutes)
+
+  def makeTableMap: Map[String, MTable] = {
+    val tableList = MTable.getTables.list(session)
+    val tableMap = tableList.map { t => (t.name.name, t)}.toMap
+    tableMap
+  }
 
   def startTradingSystemActor: ActorRef = context.actorOf(tsProps, name + "-ts-" + countTradingSystemsUsed)
 

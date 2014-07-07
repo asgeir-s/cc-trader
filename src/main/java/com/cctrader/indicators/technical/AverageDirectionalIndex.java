@@ -17,7 +17,6 @@ import org.encog.util.arrayutil.NormalizedField;
  * @author Carlos Aza Villarrubia
  * @version 1.1
  * @date 25/05/2008
- *
  */
 public class AverageDirectionalIndex {
 
@@ -137,7 +136,6 @@ public class AverageDirectionalIndex {
 
         return normalizer.normalize(value);
     }
-
 
 
 }

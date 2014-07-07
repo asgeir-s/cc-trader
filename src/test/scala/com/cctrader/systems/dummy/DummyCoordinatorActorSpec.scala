@@ -2,7 +2,7 @@ package com.cctrader.systems.dummy
 
 import java.util.Date
 
-import akka.actor.{PoisonPill, ActorRef}
+import akka.actor.ActorRef
 import akka.testkit.{TestActor, TestActorRef, TestProbe}
 import akka.util.Timeout
 import com.cctrader._
@@ -59,18 +59,18 @@ class DummyCoordinatorActorSpec extends UnitTest {
   var second = false
   val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, DataReady(new Date(1L), new Date(8L))) {
     override def startTradingSystemActor =
-    if (first) {
-      first = false
-      second = true
-      tradingSystemProbe.ref
-    }
-    else if (second) {
-      second = false
-      nextTradingSystemProbe.ref
-    }
-    else {
-      thirdTradingSystemProbe.ref
-    }
+      if (first) {
+        first = false
+        second = true
+        tradingSystemProbe.ref
+      }
+      else if (second) {
+        second = false
+        nextTradingSystemProbe.ref
+      }
+      else {
+        thirdTradingSystemProbe.ref
+      }
   })
   val dummyTSCoordinatorActor = dummyTSCoordinatorActorRef.underlyingActor
 
@@ -193,7 +193,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
     nextTradingSystemProbe.expectNoMsg(1 second)
     tradingSystemProbe.expectMsgType[DataPoint]
     // this data point is after change to nextTradingSystem
-    dummyTSCoordinatorActor.hasRunningTS should be (true)
+    dummyTSCoordinatorActor.hasRunningTS should be(true)
     liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540410L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     nextTradingSystemProbe.expectMsgType[AkkOn]
     nextTradingSystemProbe.expectMsgType[MarketDataSet]

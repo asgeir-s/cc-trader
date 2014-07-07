@@ -21,7 +21,6 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   val sigmoidNormalizerScale = 20
   var nextSystemReady: Boolean = false
   val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 5 // test depends on this
-  val signalWriter = new SignalWriter(name + "trades")
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemTime,
@@ -38,6 +37,8 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   )
 } with TSCoordinatorActor {
 
+  val signalWriter = new SignalWriter(name, tsId)
+
   def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter)
 
 }
@@ -46,5 +47,3 @@ object DummyCoordinatorActor {
   def props(dataActor: ActorRef, dataReady: DataReady): Props =
     Props(new DummyCoordinatorActor(dataActor, dataReady))
 }
-
-class SignalWriter(name: String) extends {val dbName = "dummy"} with SignalWriterTrait

@@ -2,10 +2,9 @@ package com.cctrader.systems.ann.oneperiodahead
 
 import java.util.Date
 
-import akka.actor.{Props, ActorRef}
+import akka.actor.{ActorRef, Props}
 import com.cctrader.data._
-import com.cctrader.systems.dummy.{DummyTSActor, SignalWriter}
-import com.cctrader.{MarketDataSettings, DataReady, TSCoordinatorActor}
+import com.cctrader.{DataReady, MarketDataSettings, TSCoordinatorActor}
 
 /**
  *
@@ -20,7 +19,6 @@ class ANNOnePeriodAheadCoordinator(dataActorIn: ActorRef, dataAvailableIn: DataR
   val sigmoidNormalizerScale = 20
   var nextSystemReady: Boolean = false
   val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 24 // test depends on this
-  val signalWriter = new SignalWriter(name + "trades")
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemTime,
@@ -37,6 +35,8 @@ class ANNOnePeriodAheadCoordinator(dataActorIn: ActorRef, dataAvailableIn: DataR
   )
 } with TSCoordinatorActor {
 
+  val signalWriter = new SignalWriter(name, tsId)
+
   def tsProps = ANNOnePeriodAheadTS.props(newCopyOfMarketDataSet(marketDataSet), signalWriter)
 
 }
@@ -45,4 +45,3 @@ object ANNOnePeriodAheadCoordinator {
   def props(dataActor: ActorRef, dataReady: DataReady): Props =
     Props(new ANNOnePeriodAheadCoordinator(dataActor, dataReady))
 }
-

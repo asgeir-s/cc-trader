@@ -2,7 +2,6 @@ package com.cctrader
 
 import java.util.Date
 
-import akka.testkit.{TestActorRef, TestProbe}
 import com.cctrader.data.{CurrencyPair, Exchange, Granularity}
 
 /**

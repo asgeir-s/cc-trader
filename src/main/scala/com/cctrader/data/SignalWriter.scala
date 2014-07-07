@@ -8,12 +8,13 @@ import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.meta.MTable
 import scala.slick.jdbc.{StaticQuery => Q}
 
+
 /**
  *
  */
-trait SignalWriterTrait {
+class SignalWriter(tsName: String, tsId: Long) {
 
-  val dbName: String
+  val dbName = tsName.toLowerCase + tsId
   val config = ConfigFactory.load()
 
   val databaseFactory = Database.forURL(
@@ -36,7 +37,7 @@ trait SignalWriterTrait {
     table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
     //}
     // notify new trades (should this only happen live??)
-    Q.updateNA("NOTIFY " + dbName  + " , '" + table.list.last.id + "'").execute
+    Q.updateNA("NOTIFY " + dbName + " , '" + table.list.last.id + "'").execute
 
     println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
   }
@@ -48,6 +49,5 @@ trait SignalWriterTrait {
   }
 
   class MASignalTable(tag: Tag) extends Table[Trade](tag, dbName) with SignalTable {def * = common_*}
-
 
 }

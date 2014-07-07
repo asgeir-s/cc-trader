@@ -32,14 +32,14 @@ public class ANNOnePeriodAhead implements MachineIndicator {
     public double train(MarketDataSet data) {
         // creating input and output data
         System.out.println("Creating input and output data:");
-        double[][] input = new double[data.size()-pointsNeededToCompute-1][]; // -1 because cant se one after last point
-        double[][] ideal = new double[data.size()-pointsNeededToCompute-1][];
+        double[][] input = new double[data.size() - pointsNeededToCompute - 1][]; // -1 because cant se one after last point
+        double[][] ideal = new double[data.size() - pointsNeededToCompute - 1][];
         System.out.println("Length of arrays:" + input.length);
         int count = 0;
 
         System.out.println("For min:" + pointsNeededToCompute + ", for max:" + data.size() + ", range:" + (data.size() - pointsNeededToCompute));
 
-        for(int i = pointsNeededToCompute; i < data.size()-1; i++) {
+        for (int i = pointsNeededToCompute; i < data.size() - 1; i++) {
             input[count] = getIndicatorArrayForIndex(data, i);
             ideal[count] = correctTrainingOutput(data, i);
             if (count % 1000 == 0) {
@@ -85,13 +85,12 @@ public class ANNOnePeriodAhead implements MachineIndicator {
      * @return can return change in percent/absolute change or expected price (depends on indicator)
      */
     public double compute(MarketDataSet data) {
-        MLData predictData = network.compute(new BasicMLData(getIndicatorArrayForIndex(data, data.size()-1)));
+        MLData predictData = network.compute(new BasicMLData(getIndicatorArrayForIndex(data, data.size() - 1)));
         Double predictedChange = predictData.getData(0);
         return predictedChange;
     }
 
     /**
-     *
      * @param index for training: the point to create data for. For computing index should always be the last point in the MarketDataSet
      * @return a Double array with the normalized input values.
      */
@@ -104,8 +103,7 @@ public class ANNOnePeriodAhead implements MachineIndicator {
         Double averageDirectionalIndex = AverageDirectionalIndex.get(index, 20, marketDataSet);
         if (averageDirectionalIndex > 30) {
             indicatorArray[1] = 1;
-        }
-        else {
+        } else {
             indicatorArray[1] = 0;
         }
 
@@ -114,48 +112,45 @@ public class ANNOnePeriodAhead implements MachineIndicator {
         Double exponentialMovingAverageFast = ExponentialMovingAverage.get(index, 9, marketDataSet);
         if (exponentialMovingAverageSlow < exponentialMovingAverageFast) {
             indicatorArray[2] = 1;
-        }
-        else if (exponentialMovingAverageSlow > exponentialMovingAverageFast) {
+        } else if (exponentialMovingAverageSlow > exponentialMovingAverageFast) {
             indicatorArray[2] = -1;
         }
 
 
         Double accumulationDistributionLine = AccumulationDistributionLine.get(index, 20, marketDataSet);
-        if(accumulationDistributionLine < -0.01) {
+        if (accumulationDistributionLine < -0.01) {
             indicatorArray[3] = -1;
-        }
-        else if(accumulationDistributionLine > 0.01) {
+        } else if (accumulationDistributionLine > 0.01) {
             indicatorArray[3] = 1;
-        }
-        else {
+        } else {
             indicatorArray[3] = 0;
         }
 
         // simple moving average change between last close and this close
         Double[] simpleMovingAverageThis = SimpleMovingAverage.get(index, 3, marketDataSet);
-        Double[] simpleMovingAverageLast = SimpleMovingAverage.get(index-1, 3, marketDataSet);
+        Double[] simpleMovingAverageLast = SimpleMovingAverage.get(index - 1, 3, marketDataSet);
         indicatorArray[4] = marketDataSet.sigmoidNormalizerPriceChange(simpleMovingAverageThis[0] - simpleMovingAverageLast[0]);
         // simple moving average change between last and this average volume
         indicatorArray[5] = marketDataSet.sigmoidNormalizerVolumeChange(simpleMovingAverageThis[1] - simpleMovingAverageLast[1]);
         // change between last close and this close
-        indicatorArray[6] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index).close() - marketDataSet.apply(index-1).close());
+        indicatorArray[6] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index).close() - marketDataSet.apply(index - 1).close());
         // change between last close and this close (1 back)
-        indicatorArray[7] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index-1).close() - marketDataSet.apply(index-2).close());
+        indicatorArray[7] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index - 1).close() - marketDataSet.apply(index - 2).close());
         // change between last close and this close (2 back)
-        indicatorArray[8] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index-2).close() - marketDataSet.apply(index-3).close());
+        indicatorArray[8] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index - 2).close() - marketDataSet.apply(index - 3).close());
 
         //printer
-      //  System.out.println("DataPoint:" + marketDataSet.apply(index));
-      //  for (int i = 0; i < indicatorArray.length; i++) {
-      //      System.out.println(i + " = " + indicatorArray[i]);
-      //  }
+        //  System.out.println("DataPoint:" + marketDataSet.apply(index));
+        //  for (int i = 0; i < indicatorArray.length; i++) {
+        //      System.out.println(i + " = " + indicatorArray[i]);
+        //  }
 
         return indicatorArray;
     }
 
     private double[] correctTrainingOutput(MarketDataSet marketDataSet, int index) {
         double[] correctOutput = new double[1];
-        correctOutput[0] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index+1).close() - marketDataSet.apply(index).close());
+        correctOutput[0] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index + 1).close() - marketDataSet.apply(index).close());
         return correctOutput;
     }
 

@@ -14,12 +14,6 @@ import scala.concurrent.duration._
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.meta.MTable
 import scala.slick.jdbc.{StaticQuery => Q}
-import com.cctrader.data.Signal.Signal
-import com.cctrader.data._
-
-import scala.slick.driver.PostgresDriver.simple._
-import scala.slick.jdbc.meta.MTable
-import scala.slick.jdbc.{StaticQuery => Q}
 
 /**
  *
@@ -38,7 +32,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   var marketDataSet: MarketDataSet = null
   var liveDataActor: ActorRef = _
   val numberOfLivePointsAtTheTimeForBackTest: Int
-  val signalWriter: SignalWriterTrait
+  val signalWriter: SignalWriter
   var transferToNextSystemDate: Date
   var nextSystemReady: Boolean
   val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem: Int
@@ -63,10 +57,11 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     tsTable.ddl.create
   }
 
-  tsTable.filter(p => p.name === name).delete
-  tsTable += TSInfo(None, name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.numberOfHistoricalPoints, marketDataSettings.granularity.toString, marketDataSettings.currencyPair.toString, marketDataSettings.exchange.toString)
+  //tsTable.filter(p => p.name === name).delete
+  //tsTable += TSInfo(None, name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.numberOfHistoricalPoints, marketDataSettings.granularity.toString, marketDataSettings.currencyPair.toString, marketDataSettings.exchange.toString)
+  val dbTsId = (tsTable returning tsTable.map(_.id)) += TSInfo(None, name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.numberOfHistoricalPoints, marketDataSettings.granularity.toString, marketDataSettings.currencyPair.toString, marketDataSettings.exchange.toString)
 
-
+  val tsId: Long = dbTsId.get
   dataActor ! marketDataSettings
 
   /**

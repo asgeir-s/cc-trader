@@ -2,14 +2,14 @@ package com.cctrader.systems.ann.oneperiodahead
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{SignalWriterTrait, Signal, MarketDataSet}
 import com.cctrader.data.Signal._
+import com.cctrader.data.{MarketDataSet, Signal, SignalWriter}
 import com.cctrader.indicators.machin.ANNOnePeriodAhead
 
 /**
  *
  */
-class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriterTrait) extends {
+class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
 } with TradingSystemActor {
@@ -49,6 +49,6 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
 }
 
 object ANNOnePeriodAheadTS {
-  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriterTrait): Props =
+  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter): Props =
     Props(new ANNOnePeriodAheadTS(trainingMarketDataSet, signalWriterIn))
 }

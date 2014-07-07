@@ -1,8 +1,5 @@
 package com.cctrader.dbtables
 
-import com.cctrader.data.TickDataPoint
-
-
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.{StaticQuery => Q}
 

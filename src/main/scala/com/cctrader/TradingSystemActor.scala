@@ -2,13 +2,13 @@ package com.cctrader
 
 import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data.Signal.Signal
-import com.cctrader.data.{DataPoint, MarketDataSet, Mode, SignalWriterTrait}
+import com.cctrader.data.{DataPoint, MarketDataSet, Mode, SignalWriter}
 
 /**
  *
  */
 trait TradingSystemActor extends Actor with ActorLogging {
-  val signalWriter: SignalWriterTrait
+  val signalWriter: SignalWriter
   var dataPointCountInAkk = 0
   var akkOn = 0
   var mode = Mode.TESTING

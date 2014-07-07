@@ -1,8 +1,6 @@
 package com.cctrader
 
 import akka.actor.ActorSystem
-import akka.testkit.TestKit
-import org.scalatest._
 
 /**
  *

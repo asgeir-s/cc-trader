@@ -28,19 +28,15 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalW
     100L * 1000L
   }
 
-  /**
-   * Evaluate new dataPoint.
-   * Should be of the same granularity as the training set.
-   * @return BUY, SELL or HOLD signal
-   */
-  override def newDataPoint(): Signal = {
+
+  override def newDataPoint() {
     if (sell) {
       sell = false
-      Signal.DOWN
+      goLoong
     }
     else {
       sell = true
-      Signal.UP
+      goClose
     }
   }
 }

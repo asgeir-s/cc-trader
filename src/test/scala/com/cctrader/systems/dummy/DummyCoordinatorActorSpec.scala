@@ -118,7 +118,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
   }
 
   "The liveDataActor" should "receive RequestLiveBTData" in {
-    liveDataProbe.expectMsgType[RequestLiveBTData]
+    liveDataProbe.expectMsgType[RequestNext]
   }
 
   "The marketDataSet used for training" should "be a different one then the one in the coordinator" in {
@@ -132,20 +132,20 @@ class DummyCoordinatorActorSpec extends UnitTest {
     liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, 1339539821, 500D, 5D, 5D, 5D, 50D))
     dummyTSCoordinatorActor.messageDPCount should not equal (0)
     tradingSystemProbe.send(dummyTSCoordinatorActorRef, AkkOn(10, 0))
-    liveDataProbe.expectMsgType[RequestLiveBTData]
+    liveDataProbe.expectMsgType[RequestNext]
     dummyTSCoordinatorActor.messageDPCount should equal(0)
   }
 
   "When receiving dataPoint it" should "update the time to the time of the new dataPoint" in {
     val dataPointDate = (new Date(8L).getTime / 1000).toInt
     liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, 1339539822, 500D, 5D, 5D, 5D, 50D))
-    dummyTSCoordinatorActor.tradingSystemTime.getTime should equal(new Date(1339539822 * 1000L).getTime)
+    dummyTSCoordinatorActor.tradingSystemDate.getTime should equal(new Date(1339539822 * 1000L).getTime)
   }
 
   "When receiving first dataPoints in testing-mode it" should
     "not send the dataPoints to the new system, before the datapoint-time is after transfer time" in {
-    val timeNow = dummyTSCoordinatorActor.tradingSystemTime.getTime
-    val timeForTransfer = dummyTSCoordinatorActor.tradingSystemTime.getTime + (100L * 1000L)
+    val timeNow = dummyTSCoordinatorActor.tradingSystemDate.getTime
+    val timeForTransfer = dummyTSCoordinatorActor.tradingSystemDate.getTime + (100L * 1000L)
     //dummyTSCoordinatorActor.hasRunningTS should be (false)
     var dp = DataPoint(None, None, (timeNow / 1000).toInt, 500D, 5D, 5D, 5D, 50D)
     assert(dp.date.before(new Date(timeForTransfer)))

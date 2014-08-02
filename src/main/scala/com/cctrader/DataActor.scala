@@ -59,20 +59,23 @@ class DataActor extends Actor with ActorLogging {
 
   def getDataFromDB(marketDataSettings: MarketDataSettings): MarketDataSet = {
     if (marketDataSettings.startDate.before(startTime)) {
-      log.error("market data startTime is before startTime in the database")
+      log.error("market data startTime is before startTime in the database. StartTime is: " + marketDataSettings.startDate)
     }
     MarketDataSet(
       tableMap(marketDataSettings.granularity).filter(_.timestamp <= (marketDataSettings.startDate.getTime /
-        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList,
+        1000).toInt).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList.reverse,
       marketDataSettings
     )
+
   }
 
   override def receive: Receive = {
 
     case marketDataSettings: MarketDataSettings =>
       log.info("Received: MarketDataSettings: getting data from database and sending back. MarketDataSettings:" + marketDataSettings)
-      sender ! Initialize(getDataFromDB(marketDataSettings), context.actorOf(LiveDataActor.props(databaseFactory.createSession(), marketDataSettings)))
+      val thisMarketDataSet = getDataFromDB(marketDataSettings)
+      sender ! Initialize(thisMarketDataSet, context.actorOf(LiveDataActor.props(databaseFactory.createSession(), marketDataSettings, thisMarketDataSet.last.id.get)))
+      println(thisMarketDataSet)
   }
 }
 

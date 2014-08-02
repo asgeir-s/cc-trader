@@ -21,6 +21,8 @@ import scala.collection.mutable.ListBuffer
  */
 case class MarketDataSet(private val data: List[DataPoint], settings: MarketDataSettings) {
 
+  println("New MarketDataSet created data size is: " + data.size)
+
   if (settings.numberOfHistoricalPoints < data.length) {
     throw new Exception("dataPoint list size:" + data.size + " is bigger then maxSize:" + settings.numberOfHistoricalPoints)
   }
@@ -48,10 +50,11 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
     if (dataPoint.volume > settings.MaxVolume) {
       throw new Exception("dataPoint volume is higher then maxVolume:" + settings.MaxVolume + ".")
     }
-    if (list.size == settings.numberOfHistoricalPoints) {
-      list.trimStart(1)
+    if(list.length == settings.numberOfHistoricalPoints) {
+      println("Remove from list: " + list(0))
+      list.-=(list(0))
     }
-    list.append(dataPoint)
+    list.+=(dataPoint)
   }
 
   /**
@@ -188,21 +191,27 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
 
   def apply(index: Int): DataPoint = list(index)
 
+  /**
+   * @return the newest dataPoint
+   */
   def last = list.last
 
+  /**
+   * @return the oldest dataPoint
+   */
   def first = list(0)
 
   def getList = list
 
   def iterator = list.iterator
 
-  val fromDate: Date = list(0).date
+  def fromDate: Date = list(0).date
 
-  val toDate: Date = list.last.date
+  def toDate: Date = list.last.date
 
   override def toString = {
     "MarketDataSet from " + fromDate + " to " + toDate + "with: granularity:" +
-      Granularity + ", size:" + data.size
+      Granularity + ", size:" + list.size
   }
 
 }

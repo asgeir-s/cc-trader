@@ -16,6 +16,7 @@ class SignalWriter(tsName: String, tsId: Long) {
 
   val dbName = tsName.toLowerCase + tsId
   val config = ConfigFactory.load()
+  var status = Signal.CLOSE
 
   val databaseFactory = Database.forURL(
     url = "jdbc:postgresql://" + config.getString("postgres.host") + ":" + config.getString("postgres.port") + "/" + config
@@ -34,6 +35,7 @@ class SignalWriter(tsName: String, tsId: Long) {
 
   def newSignal(signal: Signal, dataPoint: DataPoint) {
     //if(!signal.equals(Signal.SAME)){
+    status = signal
     table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
     //}
     // notify new trades (should this only happen live??)

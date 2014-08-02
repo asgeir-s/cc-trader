@@ -13,7 +13,7 @@ class ANNOnePeriodAheadCoordinator(dataActorIn: ActorRef, dataAvailableIn: DataR
   val name = "ANNOnePeriodAhead"
   val dataAvailable = dataAvailableIn
   val dataActor = dataActorIn
-  var tradingSystemTime = new Date(1403155416L * 1000L)
+  var tradingSystemDate = new Date(1403155416L * 1000L)
   val numberOfLivePointsAtTheTimeForBackTest = 100
   var transferToNextSystemDate: Date = new Date(0)
   val sigmoidNormalizerScale = 20
@@ -21,7 +21,7 @@ class ANNOnePeriodAheadCoordinator(dataActorIn: ActorRef, dataAvailableIn: DataR
   val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 24 // test depends on this
 
   val marketDataSettings = MarketDataSettings(
-    startDate = tradingSystemTime,
+    startDate = tradingSystemDate,
     numberOfHistoricalPoints = 60,
     granularity = Granularity.min30,
     currencyPair = CurrencyPair.BTC_USD,

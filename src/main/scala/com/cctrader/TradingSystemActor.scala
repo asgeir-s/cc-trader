@@ -2,7 +2,7 @@ package com.cctrader
 
 import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data.Signal.Signal
-import com.cctrader.data.{DataPoint, MarketDataSet, Mode, SignalWriter}
+import com.cctrader.data._
 
 /**
  *
@@ -25,11 +25,41 @@ trait TradingSystemActor extends Actor with ActorLogging {
   def train(): Long
 
   /**
-   * Evaluate new dataPoint.
-   * Should be of the same granularity as the training set.
-   * @return BUY, SELL or HOLD signal
+   * Called when a new dataPoint is received. As last in marketDataSet.
+   *
+   * From this function call goLooong, goShort or goClose to write signals to the signal database.
    */
-  def newDataPoint(): Signal
+  def newDataPoint(): Unit
+
+  def goLoong: Boolean = {
+    if(signalWriter.status.equals(Signal.CLOSE)) {
+      signalWriter.newSignal(Signal.LOONG, marketDataSet.last)
+      true
+    }
+    else {
+      false
+    }
+  }
+
+  def goShorte: Boolean = {
+    if(signalWriter.status.equals(Signal.CLOSE)) {
+      signalWriter.newSignal(Signal.SHORT, marketDataSet.last)
+      true
+    }
+    else {
+      false
+    }
+  }
+
+  def goClose: Boolean = {
+    if(!signalWriter.status.equals(Signal.CLOSE)) {
+      signalWriter.newSignal(Signal.CLOSE, marketDataSet.last)
+      true
+    }
+    else {
+      false
+    }
+  }
 
 
   override def receive: Receive = {
@@ -48,7 +78,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
     case dataPoint: DataPoint =>
       log.debug("Received DataPoint: time:" + dataPoint.date + ", info:" + dataPoint)
       marketDataSet.addDataPoint(dataPoint)
-      signalWriter.newSignal(newDataPoint(), dataPoint) //compute dataPoint and write to database
+      newDataPoint()
 
       if (mode == Mode.TESTING) {
         dataPointCountInAkk = dataPointCountInAkk + 1

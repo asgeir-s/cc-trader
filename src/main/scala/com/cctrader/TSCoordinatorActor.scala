@@ -26,7 +26,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   val dataActor: ActorRef
   var tradingSystemActor: ActorRef = _
   var nextTradingSystem: ActorRef = _
-  var tradingSystemTime: Date
+  var tradingSystemDate: Date
   val marketDataSettings: MarketDataSettings
   var mode = Mode.TESTING
   var marketDataSet: MarketDataSet = null
@@ -93,7 +93,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
       val askFuture = nextTradingSystem ? StartTraining(marketDataSetForTraining)
       val trainingDone = Await.result(askFuture, timeout.duration).asInstanceOf[TrainingDone]
 
-      transferToNextSystemDate = new Date(tradingSystemTime.getTime + trainingDone.trainingTimeInMilliSec) //cant use the data collected during training. (Before the TS was ready)
+      transferToNextSystemDate = new Date(tradingSystemDate.getTime + trainingDone.trainingTimeInMilliSec) //cant use the data collected during training. (Before the TS was ready)
       nextSystemReady = true
     }
     else {
@@ -105,10 +105,10 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     if (!hasRunningTS) {
       if (mode == Mode.TESTING) {
         //tradingSystemActor = nextTradingSystem
-        liveDataActor ! RequestLiveBTData(tradingSystemTime, numberOfLivePointsAtTheTimeForBackTest)
+        liveDataActor ! RequestNext(numberOfLivePointsAtTheTimeForBackTest)
       }
       else {
-        liveDataActor ! RequestLiveData(tradingSystemTime)
+        liveDataActor ! RequestLiveData(tradingSystemDate)
       }
     }
   }
@@ -121,6 +121,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
       log.info("Received Initialize message with marketDataSet: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
         + ", toDate" + marketDataSet.toDate)
       startAndTrainNewSystem(newCopyOfMarketDataSet(init.marketDataSet))
+      tradingSystemDate = marketDataSet.toDate
 
     case trainingDone: TrainingDone =>
       // some system is finished with training and ready to start trading
@@ -129,12 +130,13 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
 
     case newDataPoint: DataPoint =>
       log.debug("Received: newDataPoint")
-      if (tradingSystemTime.after(newDataPoint.date)) {
-        throw new Exception("The *new* dataPoint is older then the last. Last:" + tradingSystemTime + ", this:" + newDataPoint.date)
+      if (tradingSystemDate.after(newDataPoint.date)) {
+        throw new Exception("The *new* dataPoint is older then the last. Last:" + tradingSystemDate + ", this:" + newDataPoint.date)
       }
       messageDPCount = messageDPCount + 1
-      tradingSystemTime = newDataPoint.date
+      tradingSystemDate = newDataPoint.date
       marketDataSet.addDataPoint(newDataPoint)
+      println(marketDataSet)
 
       // start using nextSystem and kill old
       if (nextSystemReady && (mode == Mode.LIVE || newDataPoint.date.after(transferToNextSystemDate))) {
@@ -166,7 +168,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     case akk: AkkOn =>
       log.debug("Received: AkkOn")
       messageDPCount = 0
-      liveDataActor ! RequestLiveBTData(tradingSystemTime, numberOfLivePointsAtTheTimeForBackTest)
+      liveDataActor ! RequestNext(numberOfLivePointsAtTheTimeForBackTest) // denne tiden er ikke nødvendigvis riktig. LiveData burde heller bare sende ut de neste n dp
 
   }
 

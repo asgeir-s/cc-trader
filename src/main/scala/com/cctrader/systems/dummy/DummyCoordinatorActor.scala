@@ -15,15 +15,15 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
   val name = "Dummy"
   val dataAvailable = dataAvailableIn
   val dataActor = dataActorIn
-  var tradingSystemTime = new Date(1339539816L * 1000L)
+  var tradingSystemDate: java.util.Date = new Date(1339539816L * 1000L)  // test depends on this (should be: new Date(1339539816L * 1000L))
   val numberOfLivePointsAtTheTimeForBackTest = 100
   var transferToNextSystemDate: Date = new Date(0)
   val sigmoidNormalizerScale = 20
   var nextSystemReady: Boolean = false
-  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 5 // test depends on this
+  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 5 // test depends on this (should be: 5)
 
   val marketDataSettings = MarketDataSettings(
-    startDate = tradingSystemTime,
+    startDate = tradingSystemDate,
     numberOfHistoricalPoints = 100,
     granularity = Granularity.day,
     currencyPair = CurrencyPair.BTC_USD,

@@ -2,6 +2,7 @@ package com.cctrader
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.cctrader.systems.ann.oneperiodahead.ANNOnePeriodAheadCoordinator
+import com.cctrader.systems.dummy.DummyCoordinatorActor
 
 /**
  *

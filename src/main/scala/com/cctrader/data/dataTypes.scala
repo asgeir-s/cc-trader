@@ -81,7 +81,7 @@ object Exchange extends Enumeration {
 
 object Signal extends Enumeration {
   type Signal = Value
-  val UP, DOWN, SAME = Value
+  val LOONG, SHORT, CLOSE = Value
 }
 
 object CurrencyPair extends Enumeration {

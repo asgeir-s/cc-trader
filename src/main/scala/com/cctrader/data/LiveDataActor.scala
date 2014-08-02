@@ -2,10 +2,11 @@ package com.cctrader.data
 
 
 import java.sql.Statement
+import java.util.Date
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.cctrader.dbtables._
-import com.cctrader.{MarketDataSettings, RequestLiveBTData}
+import com.cctrader.{MarketDataSettings, RequestNext}
 import com.impossibl.postgres.api.jdbc.{PGConnection, PGNotificationListener}
 import com.impossibl.postgres.jdbc.PGDataSource
 import com.typesafe.config.ConfigFactory
@@ -17,13 +18,15 @@ import scala.slick.jdbc.{StaticQuery => Q}
 /**
  *
  */
-class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings) extends Actor with ActorLogging {
+class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, idStartPoint: Long) extends Actor with ActorLogging {
 
   implicit val session: Session = sessionIn
 
   var live = false
 
   var lastPointID: Int = 0
+
+  var idLastSentDP = idStartPoint
 
   val table = {
     marketDataSettings.granularity match {
@@ -100,12 +103,13 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings) 
   }
 
   override def receive: Receive = {
-    case RequestLiveBTData(tradingSystemTime, numOfPoints) =>
-      log.debug("Received: RequestLiveBTData. End time:" + tradingSystemTime)
+    case RequestNext(numOfPoints) =>
+      log.debug("Received: RequestNext " + numOfPoints + " dataPoints.")
       val idOfLastDataPoint = table.list.last.id.get
-      val dataPointsToReturn = table.filter(_.timestamp >= (tradingSystemTime.getTime / 1000L).toInt).take(numOfPoints).list
+      val dataPointsToReturn = table.filter(x => x.id > idLastSentDP && x.id <= (idLastSentDP + numOfPoints)).list
       dataPointsToReturn.foreach(x => {
         sender ! x
+        idLastSentDP = x.id.get
         println("sending:" + x)
         if (x.id.get == idOfLastDataPoint) {
           live = true
@@ -120,6 +124,6 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings) 
 }
 
 object LiveDataActor {
-  def props(sessionIn: Session, marketDataSettings: MarketDataSettings): Props =
-    Props(new LiveDataActor(sessionIn, marketDataSettings))
+  def props(sessionIn: Session, marketDataSettings: MarketDataSettings, idStartPoint: Long): Props =
+    Props(new LiveDataActor(sessionIn, marketDataSettings, idStartPoint))
 }

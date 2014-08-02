@@ -9,6 +9,7 @@ import com.cctrader.data.Granularity.Granularity
 import com.cctrader.data.MarketDataSet
 
 /**
+ *  TODO: should include instrument: bitcoin, APPL-stock etc.
  *
  * @param startDate date for the requested MarketDataSet to end
  * @param numberOfHistoricalPoints number of points to retrieve and keep in MarketDataSet during run (the maximum number of points needed for training)
@@ -42,10 +43,15 @@ case class TrainingDone(trainingTimeInMilliSec: Long)
 
 case class RequestLiveData(fromDate: Date)
 
-case class RequestLiveBTData(fromDate: Date, numOfPoints: Int)
+case class RequestNext(numOfPoints: Int)
 
 case class AkkOn(numberOfMessagesBeforeAkk: Int, initialCount: Int)
 
+/**
+ *
+ * @param marketDataSet
+ * @param liveDataActorRef
+ */
 case class Initialize(marketDataSet: MarketDataSet, liveDataActorRef: ActorRef)
 
 case class StartTraining(marketDataSet: MarketDataSet)

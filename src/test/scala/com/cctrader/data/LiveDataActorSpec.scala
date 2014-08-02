@@ -3,7 +3,7 @@ package com.cctrader.data
 import java.util.Date
 
 import akka.testkit.{TestActorRef, TestProbe}
-import com.cctrader.{MarketDataSettings, RequestLiveBTData, UnitTest}
+import com.cctrader.{MarketDataSettings, RequestNext, UnitTest}
 import com.typesafe.config.ConfigFactory
 
 import scala.slick.jdbc.JdbcBackend._
@@ -39,12 +39,12 @@ class LiveDataActorSpec extends UnitTest {
     MaxVolume = 10000
   )
 
-  val liveDataActorRef = TestActorRef(new LiveDataActor(session, marketDataSettings))
+  val liveDataActorRef = TestActorRef(new LiveDataActor(session, marketDataSettings, 78726))
   val dummyTSCoordinatorActor = liveDataActorRef.underlyingActor
 
-  "When receiving RequestLiveBTData it" should "return data from given date and the number of points" in {
+  "When receiving RequestNext it" should "return the next specified number of dataPoints" in {
     val askDate = new Date(1339539816L * 1000L)
-    tsCoordinator.send(liveDataActorRef, RequestLiveBTData(askDate, 100))
+    tsCoordinator.send(liveDataActorRef, RequestNext(100))
     val result1 = tsCoordinator.expectMsgType[DataPoint]
     assert(result1.date.compareTo(askDate) >= 0)
     val result2 = tsCoordinator.expectMsgType[DataPoint]

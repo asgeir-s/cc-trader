@@ -33,17 +33,14 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
    * Should be of the same granularity as the training set.
    * @return BUY, SELL or HOLD signal
    */
-  override def newDataPoint(): Signal = {
+  override def newDataPoint() {
     val prediction = aNNOnePeriodAhead.compute(marketDataSet)
 
     if (prediction > 0.01) {
-      Signal.DOWN
+      goLoong
     }
     else if (prediction < -0.01) {
-      Signal.UP
-    }
-    else {
-      Signal.SAME
+      goClose
     }
   }
 }

@@ -130,12 +130,5 @@ public class AverageDirectionalIndex {
         return adx[period - 1];
     }
 
-    public static double normalize(double value) {
-        NormalizedField normalizer = new NormalizedField(NormalizationAction.Normalize, null, 100, 0, 1.0,
-                -1.0);
-
-        return normalizer.normalize(value);
-    }
-
 
 }

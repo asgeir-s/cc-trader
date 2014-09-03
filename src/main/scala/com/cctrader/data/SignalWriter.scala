@@ -44,6 +44,10 @@ class SignalWriter(tsName: String, tsId: Long) {
     println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
   }
 
+  def lastTrade: Trade = {
+    table.list.last
+  }
+
   def makeTableMap: Map[String, MTable] = {
     val tableList = MTable.getTables.list(session)
     val tableMap = tableList.map { t => (t.name.name, t)}.toMap

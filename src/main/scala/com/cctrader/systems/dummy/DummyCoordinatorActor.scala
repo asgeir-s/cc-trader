@@ -27,13 +27,7 @@ class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) e
     numberOfHistoricalPoints = 100,
     granularity = Granularity.day,
     currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp,
-    PriceChangeScale = 50,
-    VolumeChangeScale = 1000,
-    MinPrice = 0,
-    MaxPrice = 1500,
-    MinVolume = 0,
-    MaxVolume = 1000000
+    exchange = Exchange.bitstamp
   )
 } with TSCoordinatorActor {
 

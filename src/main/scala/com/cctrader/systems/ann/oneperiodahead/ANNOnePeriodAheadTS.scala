@@ -12,6 +12,7 @@ import com.cctrader.indicators.machin.ANNOnePeriodAhead
 class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
+  val stopPercentage = 5.0
 } with TradingSystemActor {
 
   val aNNOnePeriodAhead = new ANNOnePeriodAhead()
@@ -35,13 +36,35 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
    */
   override def newDataPoint() {
     val prediction = aNNOnePeriodAhead.compute(marketDataSet)
+    println("prediction: " + prediction)
 
-    if (prediction > 0.01) {
-      goLoong
+    if (signalWriter.status == Signal.LOONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
+      goCloseStop(signalWriter.lastTrade.price * (1 - (stopPercentage/100)))
     }
-    else if (prediction < -0.01) {
+
+    else if(signalWriter.status == Signal.SHORT && (marketDataSet.last.high > signalWriter.lastTrade.price * (1 + (stopPercentage/100)))) {
+      goCloseStop(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
+    }
+
+
+    if (signalWriter.status == Signal.SHORT && prediction > -0.05) {
       goClose
     }
+    else if (signalWriter.status == Signal.LOONG && prediction < 0.05) {
+      goClose
+    }
+
+    if (prediction > 0.4) {
+      if(signalWriter.status == Signal.CLOSE) {
+        goLoong
+      }
+    }
+    else if (prediction < -0.4){
+      if(signalWriter.status == Signal.CLOSE) {
+        goShorte
+      }
+    }
+
   }
 }
 

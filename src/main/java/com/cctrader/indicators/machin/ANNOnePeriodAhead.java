@@ -9,7 +9,10 @@ import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
 import org.encog.neural.networks.training.Train;
+import org.encog.neural.networks.training.lma.LevenbergMarquardtTraining;
+import org.encog.neural.networks.training.propagation.back.Backpropagation;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
+import org.encog.util.simple.EncogUtility;
 
 
 /**
@@ -20,9 +23,9 @@ public class ANNOnePeriodAhead implements MachineIndicator {
 
     private BasicNetwork network;
     private final int POINTS_LOOK_AHEAD = 1;
-    private final int HIDDEN_1_NEURONS = 10;
-    private final int HIDDEN_2_NEURONS = 5;
-    private final Double MAX_ERROR = 0.000003;
+    private final int HIDDEN_1_NEURONS = 5;
+    private final int HIDDEN_2_NEURONS = 3;
+    private final Double MAX_ERROR = 0.001;
     private final int pointsNeededToCompute = 30;
 
     /**
@@ -49,6 +52,12 @@ public class ANNOnePeriodAhead implements MachineIndicator {
         }
         System.out.println("Loop exit");
 
+        System.out.println("input size:" + input.length);
+        System.out.println("ideal size:" + ideal.length);
+
+        System.out.println("input[1] size:" + input[1].length);
+        System.out.println("ideal[1] size:" + ideal[1].length);
+
         MLDataSet mlDataSet = new BasicMLDataSet(input, ideal);
 
         // creating network
@@ -58,6 +67,7 @@ public class ANNOnePeriodAhead implements MachineIndicator {
 
         network.addLayer(new BasicLayer(HIDDEN_1_NEURONS));
         network.addLayer(new BasicLayer(HIDDEN_2_NEURONS));
+        //network.addLayer(new BasicLayer(2));
 
         network.addLayer(new BasicLayer(mlDataSet.getIdealSize()));
         network.getStructure().finalizeStructure();
@@ -65,14 +75,27 @@ public class ANNOnePeriodAhead implements MachineIndicator {
 
         // training
         System.out.println("Start training:");
-        final Train train = new ResilientPropagation(network, mlDataSet);
+        final LevenbergMarquardtTraining train = new LevenbergMarquardtTraining(network, mlDataSet);
 
+        int resets = 0;
         int epoch = 1;
         do {
             train.iteration();
-            if (epoch % 1000 == 0)
+            if (epoch % 1000 == 0 || epoch < 50)
                 System.out.println("Epoch #" + epoch + " Error:" + train.getError());
             epoch++;
+            if(epoch > 10000) {
+                if(train.getError() > MAX_ERROR && resets < 0) {
+                    network.reset();
+                    epoch = 1;
+                    resets++;
+                    System.out.println("RESET TRAINING");
+                }
+                else {
+                    break;
+                }
+
+            }
         } while (train.getError() > MAX_ERROR);
         System.out.println("Training done!");
 
@@ -86,8 +109,8 @@ public class ANNOnePeriodAhead implements MachineIndicator {
      */
     public double compute(MarketDataSet data) {
         MLData predictData = network.compute(new BasicMLData(getIndicatorArrayForIndex(data, data.size() - 1)));
-        Double predictedChange = predictData.getData(0);
-        return predictedChange;
+        Double predictMomentum = predictData.getData(0);
+        return predictMomentum;
     }
 
     /**
@@ -95,64 +118,49 @@ public class ANNOnePeriodAhead implements MachineIndicator {
      * @return a Double array with the normalized input values.
      */
     private double[] getIndicatorArrayForIndex(MarketDataSet marketDataSet, int index) {
-        double[] indicatorArray = new double[9];
+        double[] indicatorArray = new double[13];
 
-        Double aroonOscillator = AroonOscillator.get(index, 21, marketDataSet);
-        indicatorArray[0] = AroonOscillator.normalize(aroonOscillator);
+        AccumulationDistributionOscillator accumulationDistributionOscillator = new AccumulationDistributionOscillator();
+        AroonOscillator aroonOscillator = new AroonOscillator(25);
+        Disparity disparity = new Disparity(10);
+        Momentum momentum = new Momentum(5);
+        MovingAverageExponentialConvergence maec = new MovingAverageExponentialConvergence(9, 26);
+        PriceOscillator priceOscillator = new PriceOscillator(9, 26);
+        RateOfChange rateOfChange = new RateOfChange(10);
+        RelativeStrengthIndex relativeStrengthIndex = new RelativeStrengthIndex(15);
+        StochasticK stochasticK = new StochasticK(10);
+        StochasticD stochasticD = new StochasticD(stochasticK, 3);
+        StochasticSlowD stochasticSlowD = new StochasticSlowD(stochasticD, 6);
+        VolumeOscillator volumeOscillator = new VolumeOscillator(9, 26);
+        WilliamsR williamsR = new WilliamsR(25);
 
-        Double averageDirectionalIndex = AverageDirectionalIndex.get(index, 20, marketDataSet);
-        if (averageDirectionalIndex > 30) {
-            indicatorArray[1] = 1;
-        } else {
-            indicatorArray[1] = 0;
+        indicatorArray[0] = accumulationDistributionOscillator.calculate(index, marketDataSet);
+        indicatorArray[1] = aroonOscillator.calculate(index, marketDataSet)/100D;
+        indicatorArray[2] = disparity.calculate(index, marketDataSet)/100D;
+        indicatorArray[3] = momentum.calculate(index, marketDataSet)/100D;
+        indicatorArray[4] = maec.calculate(index, marketDataSet)/100D;
+        indicatorArray[5] = priceOscillator.calculate(index, marketDataSet); // Stryrer alt
+        indicatorArray[6] = rateOfChange.calculate(index, marketDataSet)/100D;
+        indicatorArray[7] = relativeStrengthIndex.calculate(index, marketDataSet)/100D;
+        indicatorArray[8] = stochasticK.calculate(index, marketDataSet)/100D;
+        indicatorArray[9] = stochasticD.calculate(index, marketDataSet)/100D;
+        indicatorArray[10] = stochasticSlowD.calculate(index, marketDataSet)/100D;
+        indicatorArray[11] = volumeOscillator.calculate(index, marketDataSet); // Stryrer alt
+        indicatorArray[12] = williamsR.calculate(index, marketDataSet)/100D;
+
+        for (int i = 0; i < indicatorArray.length; i++) {
+            System.out.println("Indicator " + i + ": " + indicatorArray[i]);
         }
-
-        // moving average exponential convergence
-        Double exponentialMovingAverageSlow = ExponentialMovingAverage.get(index, 26, marketDataSet);
-        Double exponentialMovingAverageFast = ExponentialMovingAverage.get(index, 9, marketDataSet);
-        if (exponentialMovingAverageSlow < exponentialMovingAverageFast) {
-            indicatorArray[2] = 1;
-        } else if (exponentialMovingAverageSlow > exponentialMovingAverageFast) {
-            indicatorArray[2] = -1;
-        }
-
-
-        Double accumulationDistributionLine = AccumulationDistributionLine.get(index, 20, marketDataSet);
-        if (accumulationDistributionLine < -0.01) {
-            indicatorArray[3] = -1;
-        } else if (accumulationDistributionLine > 0.01) {
-            indicatorArray[3] = 1;
-        } else {
-            indicatorArray[3] = 0;
-        }
-
-        // simple moving average change between last close and this close
-        Double[] simpleMovingAverageThis = SimpleMovingAverage.get(index, 3, marketDataSet);
-        Double[] simpleMovingAverageLast = SimpleMovingAverage.get(index - 1, 3, marketDataSet);
-        indicatorArray[4] = marketDataSet.sigmoidNormalizerPriceChange(simpleMovingAverageThis[0] - simpleMovingAverageLast[0]);
-        // simple moving average change between last and this average volume
-        indicatorArray[5] = marketDataSet.sigmoidNormalizerVolumeChange(simpleMovingAverageThis[1] - simpleMovingAverageLast[1]);
-        // change between last close and this close
-        indicatorArray[6] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index).close() - marketDataSet.apply(index - 1).close());
-        // change between last close and this close (1 back)
-        indicatorArray[7] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index - 1).close() - marketDataSet.apply(index - 2).close());
-        // change between last close and this close (2 back)
-        indicatorArray[8] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index - 2).close() - marketDataSet.apply(index - 3).close());
-
-        //printer
-        //  System.out.println("DataPoint:" + marketDataSet.apply(index));
-        //  for (int i = 0; i < indicatorArray.length; i++) {
-        //      System.out.println(i + " = " + indicatorArray[i]);
-        //  }
 
         return indicatorArray;
     }
 
     private double[] correctTrainingOutput(MarketDataSet marketDataSet, int index) {
         double[] correctOutput = new double[1];
-        correctOutput[0] = marketDataSet.sigmoidNormalizerPriceChange(marketDataSet.apply(index + 1).close() - marketDataSet.apply(index).close());
+        Momentum momentum = new Momentum(3);
+        correctOutput[0] = momentum.calculate(index + POINTS_LOOK_AHEAD, marketDataSet)/100D;
+        System.out.println("Output: " + correctOutput[0]);
         return correctOutput;
     }
-
 
 }

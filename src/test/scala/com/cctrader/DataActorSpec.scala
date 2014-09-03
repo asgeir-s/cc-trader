@@ -30,13 +30,7 @@ class DataActorSpec extends UnitTest {
       numberOfHistoricalPoints = 100,
       granularity = Granularity.min1,
       currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp,
-      PriceChangeScale = 70,
-      VolumeChangeScale = 1000,
-      MinPrice = 0,
-      MaxPrice = 1500,
-      MinVolume = 0,
-      MaxVolume = 10000
+      exchange = Exchange.bitstamp
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)
@@ -70,13 +64,7 @@ class DataActorSpec extends UnitTest {
       numberOfHistoricalPoints = 100,
       granularity = Granularity.min30,
       currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp,
-      PriceChangeScale = 70,
-      VolumeChangeScale = 1000,
-      MinPrice = 0,
-      MaxPrice = 1500,
-      MinVolume = 0,
-      MaxVolume = 10000
+      exchange = Exchange.bitstamp
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)
@@ -104,13 +92,7 @@ class DataActorSpec extends UnitTest {
       numberOfHistoricalPoints = 30,
       granularity = Granularity.day,
       currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp,
-      PriceChangeScale = 70,
-      VolumeChangeScale = 1000,
-      MinPrice = 0,
-      MaxPrice = 1500,
-      MinVolume = 0,
-      MaxVolume = 10000
+      exchange = Exchange.bitstamp
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)
@@ -137,13 +119,7 @@ class DataActorSpec extends UnitTest {
       numberOfHistoricalPoints = 10,
       granularity = Granularity.min1,
       currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp,
-      PriceChangeScale = 70,
-      VolumeChangeScale = 1000,
-      MinPrice = 0,
-      MaxPrice = 1500,
-      MinVolume = 0,
-      MaxVolume = 10000
+      exchange = Exchange.bitstamp
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)

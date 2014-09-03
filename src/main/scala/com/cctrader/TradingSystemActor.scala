@@ -13,6 +13,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
   var akkOn = 0
   var mode = Mode.TESTING
   var marketDataSet: MarketDataSet
+  val stopPercentage: Double
 
   log.debug("Started: TradingSystemActor")
 
@@ -61,6 +62,15 @@ trait TradingSystemActor extends Actor with ActorLogging {
     }
   }
 
+  def goCloseStop(price: Double) = {
+    if(!signalWriter.status.equals(Signal.CLOSE)) {
+      signalWriter.newSignal(Signal.CLOSE, DataPoint(None, None ,marketDataSet.last.timestamp+1, 0, price, 0, 0, 0))
+      true
+    }
+    else {
+      false
+    }
+  }
 
   override def receive: Receive = {
     case StartTraining(marketDataSetIn: MarketDataSet) =>

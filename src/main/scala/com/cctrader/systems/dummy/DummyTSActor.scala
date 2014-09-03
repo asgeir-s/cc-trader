@@ -15,6 +15,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
 class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
+  val stopPercentage: Double = 0
 } with TradingSystemActor {
 
   var sell = false

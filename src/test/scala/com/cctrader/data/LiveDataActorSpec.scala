@@ -30,13 +30,7 @@ class LiveDataActorSpec extends UnitTest {
     numberOfHistoricalPoints = 8,
     granularity = Granularity.min5,
     currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp,
-    PriceChangeScale = 50,
-    VolumeChangeScale = 1000,
-    MinPrice = 0,
-    MaxPrice = 1500,
-    MinVolume = 0,
-    MaxVolume = 10000
+    exchange = Exchange.bitstamp
   )
 
   val liveDataActorRef = TestActorRef(new LiveDataActor(session, marketDataSettings, 78726))

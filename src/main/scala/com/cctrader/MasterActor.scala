@@ -3,6 +3,7 @@ package com.cctrader
 import akka.actor.{Actor, ActorLogging, Props}
 import com.cctrader.systems.ann.oneperiodahead.ANNOnePeriodAheadCoordinator
 import com.cctrader.systems.dummy.DummyCoordinatorActor
+import com.cctrader.systems.movingAverageConvergens.MAECCoordinatorActor
 
 /**
  *
@@ -15,6 +16,8 @@ class MasterActor extends Actor with ActorLogging {
     //all TSCoordinators to run should be listed here
     //val dummyCoordinatorActor = context.actorOf( DummyCoordinatorActor.props(dataActor, dataReady), "Dummy")
     val annOnePeriodAhead = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, dataReady), "ANNOnePeriodAhead")
+
+    //val mAECCoordinatorActor = context.actorOf( MAECCoordinatorActor.props(dataActor, dataReady), "MAEC")
 
   }
 

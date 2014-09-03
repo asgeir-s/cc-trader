@@ -15,7 +15,7 @@ import org.encog.util.arrayutil.NormalizedField;
  * a downward trend is confirmed. Divergence is also used in the oscillator to predict trend reversals. A
  * reversal warning is formed when the oscillator and the price trend are moving in an opposite direction.
  */
-public class AroonOscillator {
+public class AroonOscillatorOld {
     public static Double get(int index, int period,
                              MarketDataSet marketDataSet) {
 

@@ -3,9 +3,6 @@ package com.cctrader
 import java.util.Date
 
 import akka.actor.ActorRef
-import com.cctrader.data.CurrencyPair._
-import com.cctrader.data.Exchange._
-import com.cctrader.data.Granularity.Granularity
 import com.cctrader.data.MarketDataSet
 
 /**
@@ -13,16 +10,12 @@ import com.cctrader.data.MarketDataSet
  *
  * @param startDate date for the requested MarketDataSet to end
  * @param numberOfHistoricalPoints number of points to retrieve and keep in MarketDataSet during run (the maximum number of points needed for training)
- * @param granularity granularity of the MarketDataSet
- * @param currencyPair currency pair of the MarketDataSet
- * @param exchange exchange of the MarketDataSet
+ * @param instrument also name of table in the database (including granularity)
  */
 case class MarketDataSettings(
                                startDate: Date,
                                numberOfHistoricalPoints: Int,
-                               granularity: Granularity,
-                               currencyPair: CurrencyPair,
-                               exchange: Exchange
+                               instrument: String
                                )
 
 case class DataReady(fromDate: Date, toDate: Date)

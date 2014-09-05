@@ -12,7 +12,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
 /**
  *
  */
-class SignalWriter(tsName: String, tsId: Long) {
+class Signaler(tsName: String, tsId: Long) {
 
   val dbName = tsName.toLowerCase + tsId
   val config = ConfigFactory.load()
@@ -33,7 +33,7 @@ class SignalWriter(tsName: String, tsId: Long) {
   }
   table.ddl.create
 
-  def newSignal(signal: Signal, dataPoint: DataPoint) {
+  def newSignal(signal: Signal, dataPoint: DataPoint): Trade = {
     //if(!signal.equals(Signal.SAME)){
     status = signal
     table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
@@ -42,6 +42,7 @@ class SignalWriter(tsName: String, tsId: Long) {
     Q.updateNA("NOTIFY " + dbName + " , '" + table.list.last.id + "'").execute
 
     println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
+    lastTrade
   }
 
   def lastTrade: Trade = {

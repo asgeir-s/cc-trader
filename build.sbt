@@ -14,7 +14,7 @@ libraryDependencies ++= {
     "com.typesafe.akka"       %%  "akka-actor"                  % akkaV,
     "com.typesafe.akka"       %%  "akka-testkit"                % akkaV               % "test",
     "org.scalatest"           %%  "scalatest"                   % "2.1.6"             % "test",
-    "com.typesafe.slick"      %%  "slick"                       % "2.1.0-M2",
+    "com.typesafe.slick"      %%  "slick"                       % "2.1.0",
     "org.slf4j"               %   "slf4j-nop"                   % "1.6.4",
     "org.postgresql"          %   "postgresql"                  % "9.3-1101-jdbc41",
     "com.impossibl.pgjdbc-ng" %   "pgjdbc-ng"                   % "0.3",

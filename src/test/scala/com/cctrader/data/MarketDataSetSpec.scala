@@ -25,9 +25,7 @@ class MarketDataSetSpec extends UnitTest {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1339539816 * 1000),
       numberOfHistoricalPoints = 3,
-      granularity = Granularity.min5,
-      currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp
+      instrument = "bitstamp-BTC_USD-5min"
     )
     intercept[Exception] {
       val marketDataSet = new MarketDataSet(dataPointList, marketDataSettings)
@@ -45,9 +43,7 @@ class MarketDataSetSpec extends UnitTest {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1339539816 * 1000),
       numberOfHistoricalPoints = 3,
-      granularity = Granularity.min5,
-      currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp
+      instrument = "bitstamp-BTC_USD-5min"
     )
 
     val marketDataSet = MarketDataSet(smallDataPointList, marketDataSettings)

@@ -2,9 +2,8 @@ package com.cctrader.indicators.technical
 
 import java.util.Date
 
-import com.cctrader.indicators.technical.Disparity
-import com.cctrader.{MarketDataSettings, UnitTest}
 import com.cctrader.data._
+import com.cctrader.{MarketDataSettings, UnitTest}
 
 /**
  *
@@ -25,9 +24,7 @@ class DisparitySpec extends UnitTest {
   val marketDataSettings = MarketDataSettings(
     startDate = new Date(new Date(0L).getTime / 1000),
     numberOfHistoricalPoints = 8,
-    granularity = Granularity.min5,
-    currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp
+    instrument = "bitstamp-BTC_USD-5min"
   )
 
   val marketDataSet = new MarketDataSet(dataPointList, marketDataSettings)

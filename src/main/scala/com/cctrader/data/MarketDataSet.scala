@@ -79,8 +79,8 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
   def toDate: Date = list.last.date
 
   override def toString = {
-    "MarketDataSet from " + fromDate + " to " + toDate + "with: granularity:" +
-      Granularity + ", size:" + list.size
+    "MarketDataSet from " + fromDate + " to " + toDate + "with: instrument:" +
+      settings.instrument + ", size:" + list.size
   }
 
 }

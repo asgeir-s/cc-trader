@@ -3,7 +3,6 @@ package com.cctrader
 import java.util.Date
 
 import akka.testkit.TestActorRef
-import com.cctrader.data._
 
 import scala.slick.jdbc.{StaticQuery => Q}
 
@@ -16,21 +15,12 @@ class DataActorSpec extends UnitTest {
   val dataActorRef = TestActorRef[DataActor]
   val actor = dataActorRef.underlyingActor
 
-  "startDate and endDate" should
-    "be set to the first and last entry, respectfully, in the test-cvs." in {
-    println("Start:" + actor.startTime)
-    assert(actor.startTime.compareTo(new Date(1315922016L * 1000L)) == 0)
-    assert(actor.endTime.after(new Date(1403173902L * 1000L)))
-  }
-
   "readFromDB" should
     "not return ant data outside of the specified time interval, for Granularity.min1" in {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1366343016L * 1000L),
       numberOfHistoricalPoints = 100,
-      granularity = Granularity.min1,
-      currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp
+      instrument = "bitstamp_btc_usd_1min"
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)
@@ -62,9 +52,7 @@ class DataActorSpec extends UnitTest {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1325922016L * 1000L),
       numberOfHistoricalPoints = 100,
-      granularity = Granularity.min30,
-      currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp
+      instrument = "bitstamp_btc_usd_30min"
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)
@@ -90,9 +78,7 @@ class DataActorSpec extends UnitTest {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1325922016L * 1000L),
       numberOfHistoricalPoints = 30,
-      granularity = Granularity.day,
-      currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp
+      instrument = "bitstamp_btc_usd_day"
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)
@@ -117,9 +103,7 @@ class DataActorSpec extends UnitTest {
     val marketDataSettings = MarketDataSettings(
       startDate = new Date(1335225456L * 1000L),
       numberOfHistoricalPoints = 10,
-      granularity = Granularity.min1,
-      currencyPair = CurrencyPair.BTC_USD,
-      exchange = Exchange.bitstamp
+      instrument = "bitstamp_btc_usd_1min"
     )
 
     val marketDataSet = actor.getDataFromDB(marketDataSettings)

@@ -57,7 +57,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
 
   var first = true
   var second = false
-  val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, DataReady(new Date(1L), new Date(8L))) {
+  val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, Settings2Props.loadTsSetting("tsSettings/test/DummyTest1.conf")) {
     override def startTradingSystemActor =
       if (first) {
         first = false
@@ -90,9 +90,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
   val marketDataSettings = MarketDataSettings(
     startDate = new Date(8L),
     numberOfHistoricalPoints = 8,
-    granularity = Granularity.min5,
-    currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp
+    instrument = "bitstamp_btc_usd_5min"
   )
 
   val marketDataSet = MarketDataSet(dataPointList, marketDataSettings)
@@ -163,6 +161,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
   "When in testing-mode: dataPoints" should
     "be sent to the old tradingSystemActor until time is after transferTime. Then the dataPoints should be sent to the new system and the old system should get PoisonPill" in {
     // already got one dataPoint in last test
+    assert(dummyTSCoordinatorActor.mode == Mode.TESTING)
     liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339539999L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectMsgType[DataPoint]
     nextTradingSystemProbe.expectNoMsg(1 second)

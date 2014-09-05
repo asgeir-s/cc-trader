@@ -34,17 +34,13 @@ class DummyTSActorSpec extends UnitTest {
   val marketDataSettings = MarketDataSettings(
     startDate = new Date(8L),
     numberOfHistoricalPoints = 8,
-    granularity = Granularity.min5,
-    currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp
+    instrument = "bitstamp_btc_usd_5min"
   )
 
   val marketDataSettings2 = MarketDataSettings(
     startDate = new Date(1L),
     numberOfHistoricalPoints = 1,
-    granularity = Granularity.min5,
-    currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp
+    instrument = "bitstamp_btc_usd_5min"
   )
 
   val marketDataSet = MarketDataSet(dataPointList, marketDataSettings)
@@ -52,7 +48,7 @@ class DummyTSActorSpec extends UnitTest {
 
   val tsCoordinatorProbe = TestProbe()
 
-  val dummyTSActorRef = TestActorRef(new DummyTSActor(marketDataSet, new SignalWriter("DummyTest", 99)))
+  val dummyTSActorRef = TestActorRef(new DummyTSActor(marketDataSet, new Signaler("DummyTest", 99), Settings2Props.loadTsSetting("tsSettings/test/DummyTest1.conf")))
   val dummyTSActor = dummyTSActorRef.underlyingActor
 
   "When the actor receive StartTraining message it" should "train the actor" in {

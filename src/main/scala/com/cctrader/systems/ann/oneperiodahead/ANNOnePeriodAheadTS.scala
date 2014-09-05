@@ -2,20 +2,19 @@ package com.cctrader.systems.ann.oneperiodahead
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.Signal._
-import com.cctrader.data.{MarketDataSet, Signal, SignalWriter}
+import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
 import com.cctrader.indicators.machin.ANNOnePeriodAhead
 
 /**
  *
  */
-class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter) extends {
+class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
-  val stopPercentage = 5.0
+  val stopPercentage = tsSetting.stopPercentage.toDouble // TODO: config
 } with TradingSystemActor {
 
-  val aNNOnePeriodAhead = new ANNOnePeriodAhead()
+  val aNNOnePeriodAhead = new ANNOnePeriodAhead(tsSetting)
 
   /**
    * Train the system.
@@ -39,27 +38,26 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
     println("prediction: " + prediction)
 
     if (signalWriter.status == Signal.LOONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
-      goCloseStop(signalWriter.lastTrade.price * (1 - (stopPercentage/100)))
+      goCloseStopTestMode(signalWriter.lastTrade.price * (1 - (stopPercentage/100)))
     }
 
     else if(signalWriter.status == Signal.SHORT && (marketDataSet.last.high > signalWriter.lastTrade.price * (1 + (stopPercentage/100)))) {
-      goCloseStop(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
+      goCloseStopTestMode(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
     }
 
-
-    if (signalWriter.status == Signal.SHORT && prediction > -0.05) {
+    if (signalWriter.status == Signal.SHORT && prediction > tsSetting.thresholdCloseShort) { // TODO: config
       goClose
     }
-    else if (signalWriter.status == Signal.LOONG && prediction < 0.05) {
+    else if (signalWriter.status == Signal.LOONG && prediction < tsSetting.thresholdLong) { // TODO: config
       goClose
     }
 
-    if (prediction > 0.4) {
+    if (prediction > tsSetting.thresholdLong) { //0.4 // TODO: config
       if(signalWriter.status == Signal.CLOSE) {
         goLoong
       }
     }
-    else if (prediction < -0.4){
+    else if (prediction < tsSetting.thresholdShort){ // 0.4 // TODO: config
       if(signalWriter.status == Signal.CLOSE) {
         goShorte
       }
@@ -69,6 +67,6 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
 }
 
 object ANNOnePeriodAheadTS {
-  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter): Props =
-    Props(new ANNOnePeriodAheadTS(trainingMarketDataSet, signalWriterIn))
+  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings): Props =
+    Props(new ANNOnePeriodAheadTS(trainingMarketDataSet, signalWriterIn, tsSetting))
 }

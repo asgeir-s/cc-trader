@@ -2,7 +2,6 @@ package com.cctrader.systems.dummy
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.Signal.Signal
 import com.cctrader.data._
 
 import scala.slick.jdbc.{StaticQuery => Q}
@@ -12,7 +11,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
  *
  * And used for testing of the TradingSystemActor trait.
  */
-class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter) extends {
+class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
   val stopPercentage: Double = 0
@@ -43,6 +42,6 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalW
 }
 
 object DummyTSActor {
-  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: SignalWriter): Props =
-    Props(new DummyTSActor(trainingMarketDataSet, signalWriterIn))
+  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings): Props =
+    Props(new DummyTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
 }

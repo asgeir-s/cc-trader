@@ -1,8 +1,6 @@
 package com.cctrader.indicators.technical;
 
 import com.cctrader.data.MarketDataSet;
-import org.encog.util.arrayutil.NormalizationAction;
-import org.encog.util.arrayutil.NormalizedField;
 
 /**
  * Average Directional Index. Based on
@@ -97,7 +95,6 @@ public class AverageDirectionalIndex {
         // indicator.
         double diPlus = (int) (100D * dmPlusN[period - 1] / trN[period - 1]);
         double diMinus = (int) (100D * dmMinusN[period - 1] / trN[period - 1]);
-        ;
 
         // The next step is to calculate the absolute value of the difference
         // between the +DI and the -DI and the sum of the +DI and -DI.

@@ -1,43 +1,25 @@
 package com.cctrader.systems.dummy
 
-import java.util.Date
-
 import akka.actor.{ActorRef, Props}
+import com.cctrader.TSCoordinatorActor
 import com.cctrader.data._
-import com.cctrader.{DataReady, MarketDataSettings, TSCoordinatorActor}
 
 /**
  * Shows how to implement a TSCoordinatorActor.
  *
  * And used for testing of the TSCoordinator trait.
  */
-class DummyCoordinatorActor(dataActorIn: ActorRef, dataAvailableIn: DataReady) extends {
-  val name = "Dummy"
-  val dataAvailable = dataAvailableIn
+class DummyCoordinatorActor(dataActorIn: ActorRef, tsSettingIn: TSSettings) extends {
+  val tsSetting: TSSettings = tsSettingIn
   val dataActor = dataActorIn
-  var tradingSystemDate: java.util.Date = new Date(1339539816L * 1000L)  // test depends on this (should be: new Date(1339539816L * 1000L))
   val numberOfLivePointsAtTheTimeForBackTest = 100
-  var transferToNextSystemDate: Date = new Date(0)
-  val sigmoidNormalizerScale = 20
-  var nextSystemReady: Boolean = false
-  val tsNumberOfPointsToProcessBeforeStartTrainingNewSystem = 5 // test depends on this (should be: 5)
-
-  val marketDataSettings = MarketDataSettings(
-    startDate = tradingSystemDate,
-    numberOfHistoricalPoints = 100,
-    granularity = Granularity.day,
-    currencyPair = CurrencyPair.BTC_USD,
-    exchange = Exchange.bitstamp
-  )
 } with TSCoordinatorActor {
 
-  val signalWriter = new SignalWriter(name, tsId)
-
-  def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter)
+  def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSetting)
 
 }
 
 object DummyCoordinatorActor {
-  def props(dataActor: ActorRef, dataReady: DataReady): Props =
-    Props(new DummyCoordinatorActor(dataActor, dataReady))
+  def props(dataActor: ActorRef, tsSetting: TSSettings): Props =
+    Props(new DummyCoordinatorActor(dataActor, tsSetting))
 }

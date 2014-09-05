@@ -2,7 +2,6 @@ package com.cctrader.data
 
 
 import java.sql.Statement
-import java.util.Date
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.cctrader.dbtables._
@@ -28,53 +27,19 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
 
   var idLastSentDP = idStartPoint
 
-  val table = {
-    marketDataSettings.granularity match {
-      case Granularity.min1 =>
-        TableQuery[Min1Table]
+  val table = TableQuery[InstrumentTable]((tag:Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
 
-      case Granularity.min2 =>
-        TableQuery[Min2Table]
-
-      case Granularity.min5 =>
-        TableQuery[Min5Table]
-
-      case Granularity.min10 =>
-        TableQuery[Min10Table]
-
-      case Granularity.min15 =>
-        TableQuery[Min15Table]
-
-      case Granularity.min30 =>
-        TableQuery[Min30Table]
-
-      case Granularity.hour1 =>
-        TableQuery[Hour1Table]
-
-      case Granularity.hour2 =>
-        TableQuery[Hour2Table]
-
-      case Granularity.hour5 =>
-        TableQuery[Hour5Table]
-
-      case Granularity.hour12 =>
-        TableQuery[Hour12Table]
-
-      case Granularity.day =>
-        TableQuery[DayTable]
-    }
-  }
 
   def getDataSource: PGDataSource = {
     val config = ConfigFactory.load()
 
-    val basicDataSource = new PGDataSource();
+    val basicDataSource = new PGDataSource()
     basicDataSource.setPort(config.getString("postgres.port").toInt)
     basicDataSource.setDatabase(config.getString("postgres.dbname"))
     basicDataSource.setUser(config.getString("postgres.user"))
     basicDataSource.setPassword(config.getString("postgres.password"))
 
-    basicDataSource;
+    basicDataSource
   }
 
   def liveData(sendTo: ActorRef) {
@@ -88,8 +53,8 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
 
     pgConnection.addNotificationListener(new PGNotificationListener() {
       @Override
-      override def notification(processId: Int, granularity: String, newId: String) {
-        println("New entry in the db. granularity:" + granularity + ", newId:" + newId)
+      override def notification(processId: Int, instrument: String, newId: String) {
+        println("New entry in the db. instrument:" + instrument + ", newId:" + newId)
         // newId is database id. USe it to retrieve the new row
         val newDataPoint: DataPoint = table.filter(_.id === newId.toLong).list.last
         sendTo ! newDataPoint
@@ -97,7 +62,7 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
     })
 
     val statement: Statement = pgConnection.createStatement()
-    statement.addBatch("LISTEN " + marketDataSettings.granularity.toString)
+    statement.addBatch("LISTEN " + marketDataSettings.instrument)
     statement.executeBatch()
     statement.close()
   }
@@ -116,6 +81,7 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
         }
       })
       if (live) {
+        println("Goes live: instrument: " + marketDataSettings.instrument)
         liveData(sender)
       }
       log.debug("Finished processing: RequestLiveBTData, return size:" + dataPointsToReturn.size)

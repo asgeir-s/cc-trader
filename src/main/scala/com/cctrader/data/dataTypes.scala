@@ -2,6 +2,8 @@ package com.cctrader.data
 
 import java.util.Date
 
+import com.cctrader.dbtables.TSInfo
+
 /**
  * Summery of a interval of ticks
  *
@@ -45,38 +47,16 @@ case class TickDataPoint(
 /**
  *
  * @param id my id for the trade, set automatically. Use None for creation
- * @param writetimestamp the the signal is written to the database
+ * @param writettimestamp the the signal is written to the database
  * @param dptimestamp time on dataPoint (that lead to the trade)
  * @param signal BUY, SELL
  */
 case class Trade(
                   id: Option[Long],
-                  writetimestamp: Int,
+                  writettimestamp: Int,
                   dptimestamp: Int,
                   signal: String,
                   price: Double)
-
-
-object Granularity extends Enumeration {
-  type Granularity = Value
-  val min1 = Value("min1")
-  val min2 = Value("min2")
-  val min5 = Value("min5")
-  val min10 = Value("min10")
-  val min15 = Value("min15")
-  val min30 = Value("min30")
-  val hour1 = Value("hour1")
-  val hour2 = Value("hour2")
-  val hour5 = Value("hour5")
-  val hour12 = Value("hour12")
-  val day = Value("day")
-  val tick = Value("tick")
-}
-
-object Exchange extends Enumeration {
-  type Exchange = Value
-  val bitstamp, btcChina = Value
-}
 
 
 object Signal extends Enumeration {
@@ -84,12 +64,11 @@ object Signal extends Enumeration {
   val LOONG, SHORT, CLOSE = Value
 }
 
-object CurrencyPair extends Enumeration {
-  type CurrencyPair = Value
-  val BTC_USD = Value
-}
-
 object Mode extends Enumeration {
   type Mode = Value
   val TESTING, LIVE = Value
+}
+
+case class TSSettings(id: Option[Long], name: String, tsType: String, dbTable: String, startUnixTime: Int, thresholdLong: Double, thresholdShort: Double, thresholdCloseLong: Double, thresholdCloseShort: Double, stopPercentage: Int, trainingSetSize: Int,  numOfCalcPerTS: Int,machineLearningSettings: Map[String, String]) {
+  def tsInfo: TSInfo = TSInfo(id, name, startUnixTime, dbTable)
 }

@@ -1,14 +1,13 @@
 package com.cctrader
 
 import akka.actor.{Actor, ActorLogging}
-import com.cctrader.data.Signal.Signal
 import com.cctrader.data._
 
 /**
  *
  */
 trait TradingSystemActor extends Actor with ActorLogging {
-  val signalWriter: SignalWriter
+  val signalWriter: Signaler
   var dataPointCountInAkk = 0
   var akkOn = 0
   var mode = Mode.TESTING
@@ -16,7 +15,6 @@ trait TradingSystemActor extends Actor with ActorLogging {
   val stopPercentage: Double
 
   log.debug("Started: TradingSystemActor")
-
 
   /**
    * Train the system.
@@ -62,7 +60,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
     }
   }
 
-  def goCloseStop(price: Double) = {
+  def goCloseStopTestMode(price: Double) = {
     if(!signalWriter.status.equals(Signal.CLOSE)) {
       signalWriter.newSignal(Signal.CLOSE, DataPoint(None, None ,marketDataSet.last.timestamp+1, 0, price, 0, 0, 0))
       true

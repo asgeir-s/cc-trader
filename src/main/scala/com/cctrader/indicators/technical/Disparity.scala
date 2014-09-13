@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -13,8 +14,8 @@ class Disparity(n: Int) extends InputIndicator{
    * @param data the marketDataSet
    * @return
    */
-  override def calculate(t: Int, data: MarketDataSet): Double = {
+  override def apply(t: Int, data: MarketDataSet): Double = {
     val movingAverage = new MovingAveragePrice(n)
-    (data(t).close/movingAverage.calculate(t, data))*100
+    (data(t).close/movingAverage.apply(t, data)) - 1//*100 //scaled by me
   }
 }

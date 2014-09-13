@@ -57,7 +57,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
 
   var first = true
   var second = false
-  val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, Settings2Props.loadTsSetting("tsSettings/test/DummyTest1.conf")) {
+  val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, "tsSettings/test/DummyTest1.conf") {
     override def startTradingSystemActor =
       if (first) {
         first = false

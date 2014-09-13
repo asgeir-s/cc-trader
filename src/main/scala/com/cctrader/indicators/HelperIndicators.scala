@@ -1,11 +1,11 @@
-package com.cctrader.indicators.technical
+package com.cctrader.indicators
 
 import com.cctrader.data.MarketDataSet
 
 /**
  *
  */
-trait InputIndicator {
+trait HelperIndicators {
 
   /**
    * Calculating the indicator.
@@ -14,6 +14,7 @@ trait InputIndicator {
    * @param data the marketDataSet
    * @return
    */
-  def calculate(t: Int, data: MarketDataSet): Double
+  def apply(t: Int, data: MarketDataSet): Double
+
 
 }

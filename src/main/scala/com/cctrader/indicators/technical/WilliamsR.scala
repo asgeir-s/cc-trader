@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -13,7 +14,7 @@ class WilliamsR(n: Int) extends InputIndicator {
    * @param data the marketDataSet
    * @return
    */
-  override def calculate(t: Int, data: MarketDataSet): Double = {
+  override def apply(t: Int, data: MarketDataSet): Double = {
     // finding the lowest low and highest high
     var highestHighPrice = data(t-n).high
     var lowestLowPrice = data(t-n).low
@@ -26,6 +27,6 @@ class WilliamsR(n: Int) extends InputIndicator {
       }
     }
 
-    ((highestHighPrice - data(t).close) / (highestHighPrice - lowestLowPrice)) * 100
+    (((highestHighPrice - data(t).close) / (highestHighPrice - lowestLowPrice)) )-0.5// * 100 //scaled by me
   }
 }

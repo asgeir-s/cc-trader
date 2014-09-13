@@ -1,12 +1,17 @@
-package com.cctrader.indicators.technical
+package com.cctrader.indicators.fundamental
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
+import com.cctrader.indicators.technical.MovingAverageVolume
 
 /**
  *
  */
-class VolumeOscillator(fastN: Int, slowN: Int) extends InputIndicator{
+class NumberOfBTCTransactionsOscillator(slowN: Int, fastN: Int) extends InputIndicator{
+
+  val fastMovingAverage = new MovingAverageNumberOfBTCTransactions(fastN)
+  val slowMovingAverage = new MovingAverageNumberOfBTCTransactions(slowN)
+
   /**
    * Calculating the indicator.
    *
@@ -15,9 +20,7 @@ class VolumeOscillator(fastN: Int, slowN: Int) extends InputIndicator{
    * @return
    */
   override def apply(t: Int, data: MarketDataSet): Double = {
-    val fastMovingAverage = new MovingAverageVolume(fastN)
-    val slowMovingAverage = new MovingAverageVolume(slowN)
-
     (fastMovingAverage.apply(t, data)- slowMovingAverage.apply(t, data)) / fastMovingAverage.apply(t, data)
   }
 }
+

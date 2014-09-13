@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -15,10 +16,10 @@ class StochasticSlowD(stochasticD: StochasticD, n: Int) extends InputIndicator{
    * @param data the marketDataSet
    * @return Stochastic Slow %D
    */
-  def calculate(t: Int, data: MarketDataSet): Double = {
+  def apply(t: Int, data: MarketDataSet): Double = {
     var sum: Double = 0
     for (i <- 0 to (n-1)) {
-      sum+=stochasticD.calculate(t-i, data)
+      sum+=stochasticD.apply(t-i, data)
     }
     sum/n
   }

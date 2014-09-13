@@ -9,17 +9,17 @@ import com.cctrader.data._
  *
  * And used for testing of the TSCoordinator trait.
  */
-class DummyCoordinatorActor(dataActorIn: ActorRef, tsSettingIn: TSSettings) extends {
-  val tsSetting: TSSettings = tsSettingIn
+class DummyCoordinatorActor(dataActorIn: ActorRef, tsSettingPathIn: String) extends {
+  val tsSettingPath: String = tsSettingPathIn
   val dataActor = dataActorIn
   val numberOfLivePointsAtTheTimeForBackTest = 100
 } with TSCoordinatorActor {
 
-  def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSetting)
+  def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSettingPath)
 
 }
 
 object DummyCoordinatorActor {
-  def props(dataActor: ActorRef, tsSetting: TSSettings): Props =
-    Props(new DummyCoordinatorActor(dataActor, tsSetting))
+  def props(dataActor: ActorRef, tsSettingPath: String): Props =
+    Props(new DummyCoordinatorActor(dataActor, tsSettingPath))
 }

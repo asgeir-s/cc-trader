@@ -1,4 +1,4 @@
-package com.cctrader.indicators.technical
+package com.cctrader.indicators.fundamental
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.HelperIndicators
@@ -6,7 +6,10 @@ import com.cctrader.indicators.HelperIndicators
 /**
  *
  */
-class MovingAverageVolume(n: Int) extends HelperIndicators {
+class MovingAverageNumberOfBTCTransactions(n: Int) extends HelperIndicators {
+
+  val numberOfTransaction = new NumberOfTransaction
+
   /**
    * Calculating the indicator.
    *
@@ -17,7 +20,7 @@ class MovingAverageVolume(n: Int) extends HelperIndicators {
   override def apply(t: Int, data: MarketDataSet): Double = {
     var sum: Double = 0
     for (i <- (t-n+1) to t) {
-      sum+=data(i).volume
+      sum+=numberOfTransaction.apply(i, data)
     }
     sum/n
   }

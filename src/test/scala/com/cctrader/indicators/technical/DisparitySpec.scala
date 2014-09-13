@@ -35,8 +35,8 @@ class DisparitySpec extends UnitTest {
    * calculated by hand
    */
   "Calculation" should "be correct" in {
-    println(disparity4.calculate(7, marketDataSet))
-    println(disparity7.calculate(7, marketDataSet))
+    println(disparity4.apply(7, marketDataSet))
+    println(disparity7.apply(7, marketDataSet))
   }
 
 }

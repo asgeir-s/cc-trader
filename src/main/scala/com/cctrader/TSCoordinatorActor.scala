@@ -9,6 +9,7 @@ import com.cctrader.data._
 import com.cctrader.dbtables.{TSInfo, TSTable}
 import com.typesafe.config.ConfigFactory
 
+import scala.collection.immutable.Queue
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.slick.driver.PostgresDriver.simple._
@@ -20,8 +21,10 @@ import scala.slick.jdbc.{StaticQuery => Q}
  */
 trait TSCoordinatorActor extends Actor with ActorLogging {
 
+  val tsSettingPath: String
+  val config = ConfigFactory.load(tsSettingPath)
+  val dBConfig = ConfigFactory.load()
   val id = UUID.randomUUID()
-  val tsSetting: TSSettings
   val dataActor: ActorRef
   var tradingSystemActor: ActorRef = _
   var nextTradingSystem: ActorRef = _
@@ -34,23 +37,23 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   var hasRunningTS = false
   var messageDPCount = 0
   var countTradingSystemsUsed = 0
-  var tradingSystemDate = new Date(tsSetting.startUnixTime.toLong * 1000L) // summer 2013: 1375228800L 1. januart: 1388448000L * 1000L år 2000: 946684800 // TODO: config
+  var tradingSystemDate = new Date(config.getLong("startUnixTime") * 1000L) // summer 2013: 1375228800L 1. januart: 1388448000L * 1000L år 2000: 946684800 // TODO: config
   var nextSystemReady: Boolean = false
+  val name = config.getString("name")
+  val numberOfPredictionsPerTS = config.getInt("numberOfPredictionsBeforeNewTS")
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemDate,
-    numberOfHistoricalPoints = tsSetting.trainingSetSize, //40 // TODO: config
-    instrument = tsSetting.dbTable
+    numberOfHistoricalPoints = config.getInt("trainingSetSize"), //40
+    instrument = config.getString("tsTable")
   )
 
-  val config = ConfigFactory.load()
-
   val databaseFactory = Database.forURL(
-    url = "jdbc:postgresql://" + config.getString("postgres.host") + ":" + config.getString("postgres.port") + "/" + config
+    url = "jdbc:postgresql://" + dBConfig.getString("postgres.host") + ":" + dBConfig.getString("postgres.port") + "/" + dBConfig
       .getString("postgres.trader.dbname"),
-    driver = config.getString("postgres.driver"),
-    user = config.getString("postgres.user"),
-    password = config.getString("postgres.password"))
+    driver = dBConfig.getString("postgres.driver"),
+    user = dBConfig.getString("postgres.user"),
+    password = dBConfig.getString("postgres.password"))
 
   implicit val session = databaseFactory.createSession()
 
@@ -61,10 +64,10 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
 
   //tsTable.filter(p => p.name === name).delete
   //tsTable += TSInfo(None, name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.numberOfHistoricalPoints, marketDataSettings.granularity.toString, marketDataSettings.currencyPair.toString, marketDataSettings.exchange.toString)
-  val dbTsId = (tsTable returning tsTable.map(_.id)) += TSInfo(None, tsSetting.name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.instrument)
+  val dbTsId = (tsTable returning tsTable.map(_.id)) += TSInfo(None, name, (marketDataSettings.startDate.getTime / 1000L).toInt, marketDataSettings.instrument)
 
   val tsId: Long = dbTsId.get
-  val signalWriter = new Signaler(tsSetting.name, tsId)
+  val signalWriter = new Signaler(config.getString("name"), tsId)
 
   dataActor ! marketDataSettings
 
@@ -83,7 +86,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     tableMap
   }
 
-  def startTradingSystemActor: ActorRef = context.actorOf(tsProps, tsSetting.name + "-ts-" + countTradingSystemsUsed)
+  def startTradingSystemActor: ActorRef = context.actorOf(tsProps, name + "-ts-" + countTradingSystemsUsed)
 
   def newCopyOfMarketDataSet(setToCopy: MarketDataSet): MarketDataSet = MarketDataSet(setToCopy.list.clone().toList, setToCopy.settings.copy())
 
@@ -156,7 +159,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
         nextSystemReady = false
         hasRunningTS = true
       }
-      if (tsSetting.numOfCalcPerTS != 0 && numberOfPointsProcessedByCurrentSystem == tsSetting.numOfCalcPerTS) {
+      if (numberOfPredictionsPerTS != 0 && numberOfPointsProcessedByCurrentSystem == numberOfPredictionsPerTS) {
         log.debug("Starts a new tradingSystem")
         startAndTrainNewSystem(newCopyOfMarketDataSet(marketDataSet))
       }

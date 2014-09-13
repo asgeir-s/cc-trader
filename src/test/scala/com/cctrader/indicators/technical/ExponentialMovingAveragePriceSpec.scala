@@ -35,8 +35,8 @@ class ExponentialMovingAveragePriceSpec extends UnitTest {
    * calculated by hand
    */
   "Calculation" should "be correct" in {
-    assert(exponentialMovingAveragePrice4.calculate(7, marketDataSet)==201.2)
-    assert(exponentialMovingAveragePrice2.calculate(2, marketDataSet)==83.33333333333333)
+    assert(exponentialMovingAveragePrice4.apply(7, marketDataSet)==201.2)
+    assert(exponentialMovingAveragePrice2.apply(2, marketDataSet)==83.33333333333333)
   }
 
 }

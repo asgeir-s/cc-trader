@@ -11,7 +11,7 @@ import scala.slick.jdbc.{StaticQuery => Q}
  *
  * And used for testing of the TradingSystemActor trait.
  */
-class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings) extends {
+class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
   val stopPercentage: Double = 0
@@ -42,6 +42,6 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signale
 }
 
 object DummyTSActor {
-  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings): Props =
-    Props(new DummyTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
+  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String): Props =
+    Props(new DummyTSActor(trainingMarketDataSet, signalWriterIn, tsSettingPath))
 }

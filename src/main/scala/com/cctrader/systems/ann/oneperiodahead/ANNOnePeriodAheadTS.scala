@@ -4,17 +4,31 @@ import akka.actor.Props
 import com.cctrader.TradingSystemActor
 import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
 import com.cctrader.indicators.machin.ANNOnePeriodAhead
+import com.typesafe.config.ConfigFactory
 
 /**
  *
  */
-class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings) extends {
+class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, settingPath: String) extends {
+  val config = ConfigFactory.load(settingPath)
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
-  val stopPercentage = tsSetting.stopPercentage.toDouble // TODO: config
+  val stopPercentage = config.getDouble("thresholds.stopPercentage")
 } with TradingSystemActor {
 
-  val aNNOnePeriodAhead = new ANNOnePeriodAhead(tsSetting)
+  val thresholdLong = config.getDouble("thresholds.long")
+  val thresholdShort = config.getDouble("thresholds.short")
+  val thresholdCloseShort = config.getDouble("thresholds.closeShort")
+  val thresholdCloseLong = config.getDouble("thresholds.closeLong")
+
+  val continueTrainingInterval = config.getInt("ml.continueTrainingInterval")
+  val continueTrainingSetSize = config.getInt("ml.continueTrainingSetSize")
+
+  var count = 0;
+  //val aNNOnePeriodAhead = new ANNOnePeriodAhead(tsSetting)
+  val ann = new ANNBitcoin(settingPath)
+  var lastPredict:Double = 0
+
 
   /**
    * Train the system.
@@ -23,7 +37,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
    */
   override def train(): Long = {
     val startTrainingTime = System.currentTimeMillis()
-    aNNOnePeriodAhead.train(marketDataSet)
+    ann.train(marketDataSet)
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
@@ -34,7 +48,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
    * @return BUY, SELL or HOLD signal
    */
   override def newDataPoint() {
-    val prediction = aNNOnePeriodAhead.compute(marketDataSet)
+    val prediction = ann(marketDataSet)
     println("prediction: " + prediction)
 
     if (signalWriter.status == Signal.LOONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
@@ -45,28 +59,33 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
     }
 
-    if (signalWriter.status == Signal.SHORT && prediction > tsSetting.thresholdCloseShort) { // TODO: config
+    if (signalWriter.status == Signal.SHORT && prediction > thresholdCloseShort) {
       goClose
     }
-    else if (signalWriter.status == Signal.LOONG && prediction < tsSetting.thresholdLong) { // TODO: config
+    else if (signalWriter.status == Signal.LOONG && prediction < thresholdCloseLong) {
       goClose
     }
 
-    if (prediction > tsSetting.thresholdLong) { //0.4 // TODO: config
+    if (prediction > thresholdLong) { //0.4
       if(signalWriter.status == Signal.CLOSE) {
         goLoong
       }
     }
-    else if (prediction < tsSetting.thresholdShort){ // 0.4 // TODO: config
+    else if (prediction < thresholdShort){ // 0.4
       if(signalWriter.status == Signal.CLOSE) {
         goShorte
       }
     }
-
+    count+=1
+    if(count == continueTrainingInterval) {
+      ann.train(marketDataSet.subset(marketDataSet.size - continueTrainingSetSize, marketDataSet.size-1))
+      count = 0
+    }
+    lastPredict = prediction
   }
 }
 
 object ANNOnePeriodAheadTS {
-  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: TSSettings): Props =
+  def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: String): Props =
     Props(new ANNOnePeriodAheadTS(trainingMarketDataSet, signalWriterIn, tsSetting))
 }

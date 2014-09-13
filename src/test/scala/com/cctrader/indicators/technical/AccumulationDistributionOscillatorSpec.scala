@@ -35,8 +35,8 @@ class AccumulationDistributionOscillatorSpec extends UnitTest {
    * calculated by hand
    */
   "Calculation" should "be correct" in {
-    println(accumulationDistributionOscillator4.calculate(7, marketDataSet))
-    println(accumulationDistributionOscillator2.calculate(2, marketDataSet))
+    println(accumulationDistributionOscillator4.apply(7, marketDataSet))
+    println(accumulationDistributionOscillator2.apply(2, marketDataSet))
   }
 
 }

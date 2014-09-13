@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -14,7 +15,7 @@ class StochasticK(n: Int) extends InputIndicator{
    * @param data the marketDataSet
    * @return Stochastic %K
    */
-  def calculate(t: Int, data: MarketDataSet): Double = {
+  def apply(t: Int, data: MarketDataSet): Double = {
     // finding the lowest low and highest high
     var highestHighPrice = data(t-n).high
     var lowestLowPrice = data(t-n).low
@@ -28,6 +29,8 @@ class StochasticK(n: Int) extends InputIndicator{
     }
 
     // calculating Stochastic %K
-    (data(t).close - lowestLowPrice) / (highestHighPrice/lowestLowPrice)
+    val stockK = (data(t).close - lowestLowPrice) / (highestHighPrice-lowestLowPrice)
+    //scaling
+    stockK-0.5
   }
 }

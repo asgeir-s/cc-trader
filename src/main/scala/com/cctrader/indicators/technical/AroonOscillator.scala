@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -13,7 +14,7 @@ class AroonOscillator(n: Int) extends InputIndicator {
    * @param data the marketDataSet
    * @return
    */
-  override def calculate(t: Int, data: MarketDataSet): Double = {
+  override def apply(t: Int, data: MarketDataSet): Double = {
 
     var indexOfHigh: Int = t-n+1
     var indexOfLow: Int = t-n+1
@@ -32,6 +33,6 @@ class AroonOscillator(n: Int) extends InputIndicator {
         low = data(i).low
       }
     }
-    (((n.toDouble-(t.toDouble-indexOfHigh.toDouble))/n.toDouble)*100.toDouble) - (((n.toDouble-(t.toDouble-indexOfLow.toDouble))/n.toDouble)*100.toDouble)
+    ((((n.toDouble-(t.toDouble-indexOfHigh.toDouble))/n.toDouble)*100.toDouble) - (((n.toDouble-(t.toDouble-indexOfLow.toDouble))/n.toDouble)*100.toDouble))/100 //scaled by me
   }
 }

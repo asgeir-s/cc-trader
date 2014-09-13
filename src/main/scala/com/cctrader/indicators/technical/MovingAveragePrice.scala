@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.HelperIndicators
 
 /**
  *
@@ -13,7 +14,7 @@ class MovingAveragePrice(n: Int) extends HelperIndicators {
    * @param data the marketDataSet
    * @return
    */
-  override def calculate(t: Int, data: MarketDataSet): Double = {
+  override def apply(t: Int, data: MarketDataSet): Double = {
     var sum: Double = 0
     for (i <- (t-n+1) to t) {
       sum+=data(i).close

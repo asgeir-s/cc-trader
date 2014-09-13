@@ -35,8 +35,8 @@ class AroonOscillatorSpec extends UnitTest {
    * calculated by hand
    */
   "Calculation" should "be correct" in {
-    println(aroonOscillator4.calculate(7, marketDataSet))
-    println(aroonOscillator6.calculate(7, marketDataSet))
+    println(aroonOscillator4.apply(7, marketDataSet))
+    println(aroonOscillator6.apply(7, marketDataSet))
   }
 
 }

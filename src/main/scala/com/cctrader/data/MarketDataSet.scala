@@ -27,8 +27,6 @@ case class MarketDataSet(private val data: List[DataPoint], settings: MarketData
     throw new Exception("dataPoint list size:" + data.size + " is bigger then maxSize:" + settings.numberOfHistoricalPoints)
   }
 
-  val sigmoid = new Sigmoid(-1.0, 1.0)
-
   val list: ListBuffer[DataPoint] = ListBuffer()
   list.++=(data)
 

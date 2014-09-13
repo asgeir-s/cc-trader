@@ -1,12 +1,18 @@
-package com.cctrader.indicators.technical
+package com.cctrader.indicators.fundamental
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
+import scala.collection.immutable.TreeMap
+
 /**
  *
  */
-class AccumulationDistributionOscillator extends InputIndicator{
+class GoogleTrend extends InputIndicator {
+
+  //load cvs to List
+  val list = List()
+
   /**
    * Calculating the indicator.
    *
@@ -15,6 +21,7 @@ class AccumulationDistributionOscillator extends InputIndicator{
    * @return
    */
   override def apply(t: Int, data: MarketDataSet): Double = {
-    (data(t).high - data(t - 1).close) / (data(t).high - data(t).low)
+    // return last list entry before time of data(t)
+  0
   }
 }

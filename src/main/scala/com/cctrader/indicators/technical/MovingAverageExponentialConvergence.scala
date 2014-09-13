@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -13,10 +14,10 @@ class MovingAverageExponentialConvergence (fastN: Int, slowN: Int) extends Input
    * @param data the marketDataSet
    * @return
    */
-  override def calculate(t: Int, data: MarketDataSet): Double = {
+  override def apply(t: Int, data: MarketDataSet): Double = {
     val fastMovingAverage = new ExponentialMovingAveragePrice(fastN)
     val slowMovingAverage = new ExponentialMovingAveragePrice(slowN)
 
-    fastMovingAverage.calculate(t, data) - slowMovingAverage.calculate(t, data)
+    (fastMovingAverage.apply(t, data) - slowMovingAverage.apply(t, data)) / 100
   }
 }

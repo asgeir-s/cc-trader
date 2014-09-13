@@ -35,8 +35,8 @@ class MovingAveragePriceSpec  extends UnitTest {
    * calculated by hand
    */
   "Calculation" should "be correct" in {
-    assert(movingAveragePrice4.calculate(7, marketDataSet)==200)
-    assert(movingAveragePrice2.calculate(2, marketDataSet)==75)
+    assert(movingAveragePrice4.apply(7, marketDataSet)==200)
+    assert(movingAveragePrice2.apply(2, marketDataSet)==75)
   }
 
 }

@@ -1,6 +1,7 @@
 package com.cctrader.indicators.technical
 
 import com.cctrader.data.MarketDataSet
+import com.cctrader.indicators.InputIndicator
 
 /**
  *
@@ -13,7 +14,7 @@ class RelativeStrengthIndex(n: Int) extends InputIndicator {
    * @param data the marketDataSet
    * @return
    */
-  override def calculate(t: Int, data: MarketDataSet): Double = {
+  override def apply(t: Int, data: MarketDataSet): Double = {
     var sumUp: Double = 0
     var sumDown: Double = 0
     for (i <- (t-n+1) to t) {
@@ -27,6 +28,6 @@ class RelativeStrengthIndex(n: Int) extends InputIndicator {
       }
     }
     val rs = (sumUp/n)/(sumDown/n)
-    100-(100/(1+rs))
+    (100-(100/(1+rs))) /100 //scaled by me
   }
 }

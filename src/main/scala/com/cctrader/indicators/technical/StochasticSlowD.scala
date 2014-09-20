@@ -4,11 +4,16 @@ import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
 /**
- *
+ * Genetic algorithms approach to feature discretization in artificial neural networks for the prediction of stock price index:
+ * max: 100
+ * min: 0
+ * mean: 45.598
+ * std: 33.531
  * @param stochasticD the stochasticD to use for the average
  * @param n the number of previous time periods to use to calculate the average ("speed" of the average)
  */
-class StochasticSlowD(stochasticD: StochasticD, n: Int) extends InputIndicator{
+class StochasticSlowD(stochasticD: StochasticD, n: Int) extends InputIndicator {
+  normInRang(0, 100)
   /**
    * Calculating the indicator.
    *

@@ -4,9 +4,14 @@ import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
 /**
- *
+ *Genetic algorithms approach to feature discretization in artificial neural networks for the prediction of stock price index:
+ * max: 100
+ * min: 0
+ * mean: 47.598
+ * std: 29.531
  */
 class RelativeStrengthIndex(n: Int) extends InputIndicator {
+  normInRang(0, 100)
   /**
    * Calculating the indicator.
    *
@@ -27,7 +32,16 @@ class RelativeStrengthIndex(n: Int) extends InputIndicator {
         sumDown+=change.abs
       }
     }
-    val rs = (sumUp/n)/(sumDown/n)
-    (100-(100/(1+rs))) /100 //scaled by me
+    if(sumUp == 0){
+      0
+    }
+    else if(sumDown == 0){
+      100
+    }
+    else {
+      val rs = (sumUp/n)/(sumDown/n)
+      (100-(100/(1+rs)))
+    }
   }
+
 }

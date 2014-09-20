@@ -1,4 +1,4 @@
-package com.cctrader.systems.ann.oneperiodahead
+package com.cctrader.systems.ann.recurrent
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
@@ -12,120 +12,69 @@ import org.encog.neural.networks.BasicNetwork
 import org.encog.neural.networks.layers.BasicLayer
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing
 import org.encog.neural.networks.training.propagation.back.Backpropagation
-import org.encog.neural.networks.training.{Train, TrainingSetScore};
+import org.encog.neural.networks.training.{Train, TrainingSetScore}
+import org.encog.neural.pattern.{JordanPattern, ElmanPattern}
 
 /**
  *
  */
-class ANNBitcoin(settingsPath: String) {
-  println("ANNBitcoin has started")
-  var network = new BasicNetwork
+class ANNRecurrentBitcoin(settingsPath: String) {
 
   // sett configs
   val config = ConfigFactory.load(settingsPath)
+  val pointsToLookAhed: Int = config.getInt("ml.pointsToLookAhed")// 7  //1
   var trainingIterations = config.getInt("ml.firstTrainingIterations")
   val neuronsInHiddenLayer1: Int = config.getInt("ml.neuronsInLayer1")
   val neuronsInHiddenLayer2: Int = config.getInt("ml.neuronsInLayer2")
   val neuronsInHiddenLayer3: Int = config.getInt("ml.neuronsInLayer3")
   val learningRate: Double = config.getDouble("ml.learningRate")
   val momentum: Double = config.getDouble("ml.momentum")
-  val pointsToLookAhed: Int = config.getInt("ml.pointsToLookAhed")
-  val numberOfInputPeriods: Int = config.getInt("ml.numberOfInputPeriods")
-  val normalizeInput = config.getBoolean("ml.normalizeInput")
-  var initialtraining = true
 
   // inputs
   val stochasticK = new StochasticK(10)
   val stochasticD = new StochasticD(stochasticK, 3)
-
   val indicatorsINPUT: List[InputIndicator] = List(
-    new AccumulationDistributionOscillator,               // kan ikke normalizered nå
+    new AccumulationDistributionOscillator,
     new AroonOscillator(25),
-    new Disparity(10),                                    // kan ikke normalizered nå
-    new Momentum(5),                                      // kan ikke normalizered nå
-    new MovingAverageExponentialConvergence(9, 26),       // kan ikke normalizered nå
-    new PriceOscillator(9, 26),                           // kan ikke normalizered nå
-    new RateOfChange(10),                                 // kan ikke normalizered nå
+    new Disparity(10),
+    new Momentum(5),
+    new MovingAverageExponentialConvergence(9, 26),
+    new PriceOscillator(9, 26),
+    new RateOfChange(10),
     new RelativeStrengthIndex(15),
     stochasticK,
     stochasticD,
     new StochasticSlowD(stochasticD, 6),
-    new VolumeOscillator(9, 26),                          // kan ikke normalizered nå
-    new WilliamsR(25)//,
-    //new MovingAverageTransactionsPerBlockOscillator(9, 26)// kan ikke normalizered nå
+    new VolumeOscillator(9, 26),
+    new WilliamsR(25),
+    new MovingAverageTransactionsPerBlockOscillator(9, 26)
   )
-
-  private final val pointsNeededToCompute: Int = numberOfInputPeriods * 26 + 1
- /*
-  // NORMALIZED INPUT
-val indicatorsINPUT: List[Normalizable] = List(
-  new AroonOscillator(25),
-  new RelativeStrengthIndex(15),
-  stochasticK,
-  stochasticD,
-  new StochasticSlowD(stochasticD, 5),
-  new WilliamsR(25)
-)
-*/
-
-
-
   //outputHelper
-  val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3) //10
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10);
-  relativeStrengthIndex.normOutRange(-1, 1) // TODO: should match activation function
+  val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3)
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(20);
 
-  /**
-   * Check that the number is a valide number between 1 and -1,
-   * if not sett it to 1 if number > 1 and
-   * -1 if number < -1.
-   * It not a number set to 0
-   *
-   * num the number
-   * @return a value between -1 and 1
-
-  def normal(num: Double): Double = {
-    if (num > 1) {1}
-    else if (num < -1) {-1}
-    else if (num > -1 && num < 1) {num}
-    else {0}
-  }
-  */
+  private final val pointsNeededToCompute: Int = 27
+  private val network = createElmanNetwork(indicatorsINPUT.length, neuronsInHiddenLayer1, neuronsInHiddenLayer2, neuronsInHiddenLayer3, 1)
 
 
-  //Builds the network
-  network.addLayer(new BasicLayer(new ActivationTANH, false, indicatorsINPUT.size * numberOfInputPeriods))
-
-  if (neuronsInHiddenLayer1 > 0) {
-    network.addLayer(new BasicLayer(new ActivationTANH, true, neuronsInHiddenLayer1))
-    println("Add hidden layer #1, with size: " + neuronsInHiddenLayer1)
-  }
-  if (neuronsInHiddenLayer2 > 0) {
-    network.addLayer(new BasicLayer(new ActivationTANH, true, neuronsInHiddenLayer2))
-    println("Add hidden layer #2, with size: " + neuronsInHiddenLayer2)
-  }
-  if (neuronsInHiddenLayer3 > 0) {
-    network.addLayer(new BasicLayer(new ActivationTANH, true, neuronsInHiddenLayer3))
-    println("Add hidden layer #3, with size: " + neuronsInHiddenLayer3)
-  }
-  network.addLayer(new BasicLayer(new ActivationTANH, false, 1))
-  network.getStructure.finalizeStructure
-  network.reset
-
-  def inputMaker(index: Int, data: MarketDataSet): Array[Double] = {
-    var input: Array[Double] = Array[Double]()
-    if(normalizeInput) {
-      for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x.getNormalized(index-j, data)).toArray
-      }
+  def createElmanNetwork(inoutLayerSize: Int, hiddenLayer1Size: Int, hiddenLayer2Size: Int, hiddenLayer3Size: Int, outputLayerSize: Int): BasicNetwork =  {
+    // construct an Elman type network
+    val pattern = new JordanPattern()//ElmanPattern()
+    pattern.setActivationFunction(new ActivationSigmoid())
+    pattern.setInputNeurons(inoutLayerSize)
+    if(hiddenLayer1Size > 0) {
+      pattern.addHiddenLayer(hiddenLayer1Size)
     }
-    else {
-      for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x(index-j, data)).toArray
-      }
+    if(hiddenLayer2Size > 0) {
+      pattern.addHiddenLayer(hiddenLayer2Size)
     }
-    input
+    if(hiddenLayer3Size > 0) {
+      pattern.addHiddenLayer(hiddenLayer3Size)
+    }
+    pattern.setOutputNeurons(outputLayerSize)
+    pattern.generate().asInstanceOf[BasicNetwork]
   }
+
 
   /**
    * Train the network with this MarketDataSet as training set.
@@ -133,21 +82,14 @@ val indicatorsINPUT: List[Normalizable] = List(
    * @return the final error of the network
    */
   def train(data: MarketDataSet): Double = {
-
-    // setting max and min input based on training-set
-    if(initialtraining && normalizeInput) {
-      indicatorsINPUT.foreach(_.setNormalizationBounds(data, pointsNeededToCompute))
-      indicatorsINPUT.foreach(_.normOutRange(-1, 1))
-    }
-
     val mlDataSet: MLDataSet = {
       val input: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed)
       val ideal: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed) //TODO: put in config
 
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
-        input(i - pointsNeededToCompute) = inputMaker(i, data)
+        input(i - pointsNeededToCompute) = indicatorsINPUT.map(x => x(i, data)).toArray
         ideal(i - pointsNeededToCompute) = idealOUTPUTRelativeStrengthIndex(data, i)
-        println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size +  "):")
+        println("Input #" + i + ":")
         println(input(i - pointsNeededToCompute).toVector)
         println("Output #" + i + ":")
         println(ideal(i - pointsNeededToCompute).toVector)
@@ -155,33 +97,26 @@ val indicatorsINPUT: List[Normalizable] = List(
       new BasicMLDataSet(input, ideal)
     }
 
-
-    println("HERE?")
     val train: Train = new Backpropagation(network, mlDataSet, learningRate, momentum)
-
+    //if (train.getError < 0.001) {network.reset()}
     var lastError: Double = Double.MaxValue
     var lastAnneal: Int = 0
-    var epoch = 0;
-    do {
-      train.iteration()
+    for (epoch <- 0 until trainingIterations) {
+      train.iteration
       val error: Double = train.getError
       println("Iteration(Backprop) #" + epoch + " Error:" + error)
-      /*
       if (error > 0.05) {
         if ((lastAnneal > 30) && (error > lastError || Math.abs(error - lastError) < 0.0001)) {
-          trainNetworkAnneal(mlDataSet)
+          trainNetworkAnneal(mlDataSet) // Kanskje fjerne?
           lastAnneal = 0
         }
       }
-      */
       lastError = train.getError
       lastAnneal += 1
-      epoch += 1
-    } while (epoch < trainingIterations)
+    }
 
     trainingIterations = config.getInt("ml.laterTrainingIterations")
     println("Training done! Final error: " + train.getError)
-    initialtraining = false
     return train.getError
   }
 
@@ -206,7 +141,7 @@ val indicatorsINPUT: List[Normalizable] = List(
    * @return the prediction. Based on the selected idealOUTPUT
    */
   def apply(data: MarketDataSet): Double = {
-    val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size-1, data)))
+    val predictData: MLData = network.compute(new BasicMLData(indicatorsINPUT.map(_(data.size - 1, data)).toArray))
     val predict: Double = predictData.getData(0)
     System.out.println("predict:" + predict)
     return predict
@@ -262,7 +197,7 @@ val indicatorsINPUT: List[Normalizable] = List(
    * @return the predicted output
    */
   private def idealOUTPUTRelativeStrengthIndex(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array(relativeStrengthIndex.getNormalized(index + pointsToLookAhed, marketDataSet))
+    Array(relativeStrengthIndex(index + pointsToLookAhed, marketDataSet)/100)
   }
 
 }

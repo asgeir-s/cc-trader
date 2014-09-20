@@ -4,10 +4,15 @@ import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
 /**
- *
+ * Genetic algorithms approach to feature discretization in artificial neural networks for the prediction of stock price index:
+ * max: 100
+ * min: 0
+ * mean: 45.598
+ * std: 33.531
  * @param n the number of indexes to "look-back"
  */
-class StochasticK(n: Int) extends InputIndicator{
+class StochasticK(n: Int) extends InputIndicator {
+  normInRang(0, 100)
   /**
    * Calculating the indicator.
    *
@@ -17,10 +22,10 @@ class StochasticK(n: Int) extends InputIndicator{
    */
   def apply(t: Int, data: MarketDataSet): Double = {
     // finding the lowest low and highest high
-    var highestHighPrice = data(t-n).high
-    var lowestLowPrice = data(t-n).low
-    for (i <- (t-n+1) to t) {
-      if(data(i).high > highestHighPrice){
+    var highestHighPrice = data(t - n).high
+    var lowestLowPrice = data(t - n).low
+    for (i <- (t - n + 1) to t) {
+      if (data(i).high > highestHighPrice) {
         highestHighPrice = data(i).high
       }
       if (data(i).low < lowestLowPrice) {
@@ -29,8 +34,15 @@ class StochasticK(n: Int) extends InputIndicator{
     }
 
     // calculating Stochastic %K
-    val stockK = (data(t).close - lowestLowPrice) / (highestHighPrice-lowestLowPrice)
-    //scaling
-    stockK-0.5
+    val indicator = (data(t).close - lowestLowPrice) / (highestHighPrice - lowestLowPrice) * 100
+
+    // make sure their will be a output (not Nan)
+    if (indicator > -10 && indicator < 200) {
+      indicator
+    }
+    else{
+      50
+    }
   }
+
 }

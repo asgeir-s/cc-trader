@@ -18,6 +18,6 @@ class MovingAverageExponentialConvergence (fastN: Int, slowN: Int) extends Input
     val fastMovingAverage = new ExponentialMovingAveragePrice(fastN)
     val slowMovingAverage = new ExponentialMovingAveragePrice(slowN)
 
-    (fastMovingAverage.apply(t, data) - slowMovingAverage.apply(t, data)) / 100
+    (fastMovingAverage.apply(t, data) - slowMovingAverage.apply(t, data))
   }
 }

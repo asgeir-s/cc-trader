@@ -4,9 +4,14 @@ import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
 /**
- *
+ * Genetic algorithms approach to feature discretization in artificial neural networks for the prediction of stock price index:
+ * max: 100
+ * min: -0.107
+ * mean: 54.593
+ * std: 33.637
  */
 class WilliamsR(n: Int) extends InputIndicator {
+  normInRang(0, 100)
   /**
    * Calculating the indicator.
    *
@@ -27,6 +32,6 @@ class WilliamsR(n: Int) extends InputIndicator {
       }
     }
 
-    (((highestHighPrice - data(t).close) / (highestHighPrice - lowestLowPrice)) )-0.5// * 100 //scaled by me
+    (((highestHighPrice - data(t).close) / (highestHighPrice - lowestLowPrice)) ) * 100
   }
 }

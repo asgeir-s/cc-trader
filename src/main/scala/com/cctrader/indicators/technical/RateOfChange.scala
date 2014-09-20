@@ -4,7 +4,11 @@ import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
 /**
- *
+ *Genetic algorithms approach to feature discretization in artificial neural networks for the prediction of stock price index:
+ * max: 119.337
+ * min: 81.992
+ * mean: 99.994
+ * std: 3.449
  */
 class RateOfChange(n: Int) extends InputIndicator{
   /**
@@ -15,8 +19,6 @@ class RateOfChange(n: Int) extends InputIndicator{
    * @return
    */
   override def apply(t: Int, data: MarketDataSet): Double = {
-    val indicator = (data(t).close / data(t-n).close) //* 100 //scaled by me
-    //scale:
-    indicator - 1
+    (data(t).close / data(t-n).close) * 100
   }
 }

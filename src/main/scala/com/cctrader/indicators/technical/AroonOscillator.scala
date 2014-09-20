@@ -4,9 +4,15 @@ import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
 /**
+ * This indicator fluctuates between -100 and +100 with zero as the middle line.
+ * max: 100
+ * min: -100
  *
+ * normOutRang needs to be set to use normalization
  */
 class AroonOscillator(n: Int) extends InputIndicator {
+  normInRang(-100, 100)
+
   /**
    * Calculating the indicator.
    *
@@ -21,8 +27,6 @@ class AroonOscillator(n: Int) extends InputIndicator {
     var high = data(t-n+1).high
     var low = data(t-n+1).low
 
-    println("TOTO")
-
     for (i <- (t-n+2) to t) {
       if(data(i).high > high) {
         indexOfHigh = i
@@ -33,6 +37,7 @@ class AroonOscillator(n: Int) extends InputIndicator {
         low = data(i).low
       }
     }
-    ((((n.toDouble-(t.toDouble-indexOfHigh.toDouble))/n.toDouble)*100.toDouble) - (((n.toDouble-(t.toDouble-indexOfLow.toDouble))/n.toDouble)*100.toDouble))/100 //scaled by me
+    ((((n.toDouble-(t.toDouble-indexOfHigh.toDouble))/n.toDouble)*100.toDouble) - (((n.toDouble-(t.toDouble-indexOfLow.toDouble))/n.toDouble)*100.toDouble))
   }
+
 }

@@ -1,24 +1,19 @@
-package com.cctrader.systems.ann.oneperiodahead
+package com.cctrader.systems.ann.recurrent
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
-import com.cctrader.indicators.machin.ANNOnePeriodAhead
-import com.cctrader.indicators.technical.RelativeStrengthIndex
+import com.cctrader.data.{MarketDataSet, Signal, Signaler}
 import com.typesafe.config.ConfigFactory
 
 /**
  *
  */
-class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, settingPath: String) extends {
+class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, settingPath: String) extends {
   val config = ConfigFactory.load(settingPath)
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
   val stopPercentage = config.getDouble("thresholds.stopPercentage")
 } with TradingSystemActor {
-
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10);
-
 
   val thresholdLong = config.getDouble("thresholds.long")
   val thresholdShort = config.getDouble("thresholds.short")
@@ -29,8 +24,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
   val continueTrainingSetSize = config.getInt("ml.continueTrainingSetSize")
 
   var count = 0;
-  //val aNNOnePeriodAhead = new ANNOnePeriodAhead(tsSetting)
-  val ann = new ANNBitcoin(settingPath)
+  val ann = new ANNRecurrentBitcoin(settingPath)
   var lastPredict:Double = 0
 
 
@@ -52,7 +46,6 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
    * @return BUY, SELL or HOLD signal
    */
   override def newDataPoint() {
-    val rsiToDay = relativeStrengthIndex(marketDataSet.size-1, marketDataSet)
     val prediction = ann(marketDataSet)
     println("prediction: " + prediction)
 
@@ -64,19 +57,17 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
     }
 
-
-    if (signalWriter.status == Signal.SHORT && rsiToDay > 50) {
+    if (signalWriter.status == Signal.SHORT && prediction > thresholdCloseShort) {
       goClose
     }
-    else if (signalWriter.status == Signal.LOONG && rsiToDay < 50) {
+    else if (signalWriter.status == Signal.LOONG && prediction < thresholdCloseLong) {
       goClose
     }
 
-
-    if (prediction > thresholdLong || rsiToDay > 70) { //0.4
+    if (prediction > thresholdLong) { //0.4
         goLoong
     }
-    else if (prediction < thresholdShort || rsiToDay <  30){ // 0.4
+    else if (prediction < thresholdShort){ // 0.4
         goShorte
     }
     count+=1
@@ -88,7 +79,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
   }
 }
 
-object ANNOnePeriodAheadTS {
+object ANNRecurrentTS {
   def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: String): Props =
-    Props(new ANNOnePeriodAheadTS(trainingMarketDataSet, signalWriterIn, tsSetting))
+    Props(new ANNRecurrentTS(trainingMarketDataSet, signalWriterIn, tsSetting))
 }

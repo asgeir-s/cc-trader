@@ -32,7 +32,7 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signale
   override def newDataPoint() {
     if (sell) {
       sell = false
-      goLoong
+      goLong
     }
     else {
       sell = true

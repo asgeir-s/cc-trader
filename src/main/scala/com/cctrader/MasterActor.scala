@@ -19,13 +19,18 @@ class MasterActor extends Actor with ActorLogging {
   //val annOnePeriodAhead = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "stock_tsla_daily"), "ANNOnePeriodAhead1") // bitstamp_btc_usd_day
 
   //val annRecurrentOnePeriodAhead = context.actorOf(ANNRecurrentCoordinator.props(dataActor, "tsSettings/RecurrentBTCHour.conf"))
-  //val annOnePeriodAheadHour = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/SuperBitcoinTraderHour.conf"))
-  val annOnePeriodAheadDay = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/SuperBitcoinTraderDay.conf"))
-  //val directRSIDay = context.actorOf(DirectRSICoordinatorActor.props(dataActor, "tsSettings/DirectRSIDay.conf"))
+  //val annOnePeriodAheadHour = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/OpositRSIANNHour.conf"))
+  val directOpositANNDay1 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/OpositRSIANNDay1.conf"))
+  val directOpositANNDay2 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/OpositRSIANNDay2.conf"))
+  val directOpositANNDay3 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/OpositRSIANNDay3.conf"))
+  val directOpositANNDay4 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/OpositRSIANNDay4.conf"))
+
+
+  //val directOpositRSIDay = context.actorOf(DirectRSICoordinatorActor.props(dataActor, "tsSettings/DirectOpositRSIDay.conf"))
 
 
 
-  //val annOnePeriodAhead1 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/SuperBitcoinTraderHour.conf"))
+  //val annOnePeriodAhead1 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "tsSettings/OpositRSIANNHour.conf"))
   //val annOnePeriodAhead3 = context.actorOf(ANNOnePeriodAheadCoordinator.props(dataActor, "stock_appl_daily"), "ANNOnePeriodAhead3")
   //val mAECCoordinatorActor = context.actorOf( MAECCoordinatorActor.props(dataActor, dataReady), "MAEC")
 

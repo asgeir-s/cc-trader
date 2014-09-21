@@ -30,9 +30,9 @@ trait TradingSystemActor extends Actor with ActorLogging {
    */
   def newDataPoint(): Unit
 
-  def goLoong: Boolean = {
+  def goLong: Boolean = {
     if(signalWriter.status.equals(Signal.CLOSE)) {
-      signalWriter.newSignal(Signal.LOONG, marketDataSet.last)
+      signalWriter.newSignal(Signal.LONG, marketDataSet.last)
       true
     }
     else {
@@ -40,7 +40,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
     }
   }
 
-  def goShorte: Boolean = {
+  def goShort: Boolean = {
     if(signalWriter.status.equals(Signal.CLOSE)) {
       signalWriter.newSignal(Signal.SHORT, marketDataSet.last)
       true

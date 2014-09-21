@@ -46,8 +46,8 @@ class ANNRecurrentBitcoin(settingsPath: String) {
     stochasticD,
     new StochasticSlowD(stochasticD, 6),
     new VolumeOscillator(9, 26),
-    new WilliamsR(25),
-    new MovingAverageTransactionsPerBlockOscillator(9, 26)
+    new WilliamsR(25)
+    //new MovingAverageTransactionsPerBlockOscillator(9, 26)
   )
   //outputHelper
   val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3)

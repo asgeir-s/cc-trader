@@ -56,7 +56,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
     val prediction = ann(marketDataSet)
     println("prediction: " + prediction)
 
-    if (signalWriter.status == Signal.LOONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
+    if (signalWriter.status == Signal.LONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 - (stopPercentage/100)))
     }
 
@@ -68,16 +68,15 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
     if (signalWriter.status == Signal.SHORT && rsiToDay > 50) {
       goClose
     }
-    else if (signalWriter.status == Signal.LOONG && rsiToDay < 50) {
+    else if (signalWriter.status == Signal.LONG && rsiToDay < 50) {
       goClose
     }
 
-
     if (prediction > thresholdLong || rsiToDay > 70) { //0.4
-        goLoong
+        goLong
     }
     else if (prediction < thresholdShort || rsiToDay <  30){ // 0.4
-        goShorte
+        goShort
     }
     count+=1
     if(count == continueTrainingInterval) {

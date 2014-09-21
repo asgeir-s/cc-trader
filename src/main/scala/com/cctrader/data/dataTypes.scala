@@ -61,7 +61,7 @@ case class Trade(
 
 object Signal extends Enumeration {
   type Signal = Value
-  val LOONG, SHORT, CLOSE = Value
+  val LONG, SHORT, CLOSE = Value
 }
 
 object Mode extends Enumeration {

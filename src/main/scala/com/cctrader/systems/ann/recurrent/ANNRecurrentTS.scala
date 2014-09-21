@@ -49,7 +49,7 @@ class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signa
     val prediction = ann(marketDataSet)
     println("prediction: " + prediction)
 
-    if (signalWriter.status == Signal.LOONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
+    if (signalWriter.status == Signal.LONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 - (stopPercentage/100)))
     }
 
@@ -60,15 +60,15 @@ class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signa
     if (signalWriter.status == Signal.SHORT && prediction > thresholdCloseShort) {
       goClose
     }
-    else if (signalWriter.status == Signal.LOONG && prediction < thresholdCloseLong) {
+    else if (signalWriter.status == Signal.LONG && prediction < thresholdCloseLong) {
       goClose
     }
 
     if (prediction > thresholdLong) { //0.4
-        goLoong
+        goLong
     }
     else if (prediction < thresholdShort){ // 0.4
-        goShorte
+        goShort
     }
     count+=1
     if(count == continueTrainingInterval) {

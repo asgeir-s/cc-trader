@@ -12,7 +12,7 @@ import org.encog.neural.networks.BasicNetwork
 import org.encog.neural.networks.layers.BasicLayer
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing
 import org.encog.neural.networks.training.propagation.back.Backpropagation
-import org.encog.neural.networks.training.{Train, TrainingSetScore};
+import org.encog.neural.networks.training.{Train, TrainingSetScore}
 
 /**
  *
@@ -72,7 +72,7 @@ val indicatorsINPUT: List[Normalizable] = List(
 
   //outputHelper
   val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3) //10
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10);
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
   relativeStrengthIndex.normOutRange(-1, 1) // TODO: should match activation function
 
   /**
@@ -109,8 +109,8 @@ val indicatorsINPUT: List[Normalizable] = List(
     println("Add hidden layer #3, with size: " + neuronsInHiddenLayer3)
   }
   network.addLayer(new BasicLayer(new ActivationTANH, false, 1))
-  network.getStructure.finalizeStructure
-  network.reset
+  network.getStructure.finalizeStructure()
+  network.reset()
 
   def inputMaker(index: Int, data: MarketDataSet): Array[Double] = {
     var input: Array[Double] = Array[Double]()
@@ -147,25 +147,27 @@ val indicatorsINPUT: List[Normalizable] = List(
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
         input(i - pointsNeededToCompute) = inputMaker(i, data)
         ideal(i - pointsNeededToCompute) = idealOUTPUTRelativeStrengthIndex(data, i)
-        println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size +  "):")
-        println(input(i - pointsNeededToCompute).toVector)
-        println("Output #" + i + ":")
-        println(ideal(i - pointsNeededToCompute).toVector)
+        if(i%100 == 0) {
+          println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size + "):")
+          println(input(i - pointsNeededToCompute).toVector)
+          println("Output #" + i + ":")
+          println(ideal(i - pointsNeededToCompute).toVector)
+        }
       }
       new BasicMLDataSet(input, ideal)
     }
 
-
-    println("HERE?")
     val train: Train = new Backpropagation(network, mlDataSet, learningRate, momentum)
 
     var lastError: Double = Double.MaxValue
     var lastAnneal: Int = 0
-    var epoch = 0;
+    var epoch = 0
     do {
       train.iteration()
       val error: Double = train.getError
-      println("Iteration(Backprop) #" + epoch + " Error:" + error)
+      if(epoch%1000==0) {
+        println("Iteration(Backprop) #" + epoch + " Error:" + error)
+      }
       /*
       if (error > 0.05) {
         if ((lastAnneal > 30) && (error > lastError || Math.abs(error - lastError) < 0.0001)) {
@@ -182,7 +184,7 @@ val indicatorsINPUT: List[Normalizable] = List(
     trainingIterations = config.getInt("ml.laterTrainingIterations")
     println("Training done! Final error: " + train.getError)
     initialtraining = false
-    return train.getError
+    train.getError
   }
 
   /**
@@ -194,7 +196,7 @@ val indicatorsINPUT: List[Normalizable] = List(
     System.out.println("Training with simulated annealing for 5 iterations")
     val train: NeuralSimulatedAnnealing = new NeuralSimulatedAnnealing(network, new TrainingSetScore(mlDataSet), 10, 2, 100)
     for (epoch <- 0 until 5) {
-      train.iteration
+      train.iteration()
       System.out.println("Iteration(Anneal) #" + epoch + " Error:" + train.getError)
     }
   }
@@ -209,7 +211,7 @@ val indicatorsINPUT: List[Normalizable] = List(
     val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size-1, data)))
     val predict: Double = predictData.getData(0)
     System.out.println("predict:" + predict)
-    return predict
+    predict
   }
 
 

@@ -17,7 +17,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
   val stopPercentage = config.getDouble("thresholds.stopPercentage")
 } with TradingSystemActor {
 
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10);
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
 
 
   val thresholdLong = config.getDouble("thresholds.long")
@@ -28,7 +28,7 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
   val continueTrainingInterval = config.getInt("ml.continueTrainingInterval")
   val continueTrainingSetSize = config.getInt("ml.continueTrainingSetSize")
 
-  var count = 0;
+  var count = 0
   //val aNNOnePeriodAhead = new ANNOnePeriodAhead(tsSetting)
   val ann = new ANNBitcoin(settingPath)
   var lastPredict:Double = 0
@@ -63,7 +63,6 @@ class ANNOnePeriodAheadTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: 
     else if(signalWriter.status == Signal.SHORT && (marketDataSet.last.high > signalWriter.lastTrade.price * (1 + (stopPercentage/100)))) {
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
     }
-
 
     if (signalWriter.status == Signal.SHORT && rsiToDay > 50) {
       goClose

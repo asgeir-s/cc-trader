@@ -210,7 +210,6 @@ val indicatorsINPUT: List[Normalizable] = List(
   def apply(data: MarketDataSet): Double = {
     val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size-1, data)))
     val predict: Double = predictData.getData(0)
-    System.out.println("predict:" + predict)
     predict
   }
 

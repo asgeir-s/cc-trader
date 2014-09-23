@@ -54,7 +54,8 @@ class ForwardIndicatorsTSActor(trainingMarketDataSet: MarketDataSet, signalWrite
   override def newDataPoint() {
     val rsiToDay = relativeStrengthIndex(marketDataSet.size-1, marketDataSet)
     val prediction = ann(marketDataSet)
-    println("prediction: " + prediction)
+    println("Prediction: " + prediction)
+    println("RSI today: " + rsiToDay)
 
     if (signalWriter.status == Signal.LONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage/100)))) {
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 - (stopPercentage/100)))

@@ -21,12 +21,12 @@ class MasterActor extends Actor with ActorLogging {
   //val annRecurrentOnePeriodAhead = context.actorOf(RecurrentCoordinatorActor.props(dataActor, "tsSettings/Recurrent_Hour1.conf"))
   //val annOnePeriodAheadHour = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/OppositeRSI_Hour1.conf"))
   val oppositeANNDay1 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day2.conf"))
-  //val oppositeANNDay2 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day3.conf"))
-  //val oppositeANNDay3 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day4.conf"))
-  //val oppositeANNDay4 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day5.conf"))
+  val oppositeANNDay2 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day3.conf"))
+  val oppositeANNDay3 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day4.conf"))
+  val oppositeANNDay4 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day5.conf"))
 
 
-  val directOpositRSIDay = context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical.oppositeRSI/OppositeRSI_Day1.conf"))
+  val directOppositeRSIDay = context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical.oppositeRSI/OppositeRSI_Day1.conf"))
 
 
 

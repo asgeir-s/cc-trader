@@ -120,6 +120,11 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
     }
   }
 
+  override def postStop() {
+    // clean up some resources ...
+    session.close()
+  }
+
   override def receive: Receive = {
     //received data for training. First time
     case init: Initialize =>

@@ -20,13 +20,9 @@ import scala.slick.jdbc.{StaticQuery => Q}
 class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, idStartPoint: Long) extends Actor with ActorLogging {
 
   implicit val session: Session = sessionIn
-
   var live = false
-
   var lastPointID: Int = 0
-
   var idLastSentDP = idStartPoint
-
   val table = TableQuery[InstrumentTable]((tag:Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
 
 

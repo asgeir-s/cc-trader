@@ -54,6 +54,11 @@ class DataActor extends Actor with ActorLogging {
 
   }
 
+  override def postStop() {
+    // clean up some resources ...
+    session.close()
+  }
+
   override def receive: Receive = {
     case marketDataSettings: MarketDataSettings =>
       log.info("Received: MarketDataSettings: getting data from database and sending back for MarketDataSettings:" + marketDataSettings)

@@ -1,4 +1,4 @@
-package com.cctrader.systems.directRSI
+package com.cctrader.systems.classical.oppositeRSI
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
@@ -8,14 +8,14 @@ import com.cctrader.indicators.technical.RelativeStrengthIndex
 /**
  *
  */
-class DirectRSITSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String) extends {
+class OppositeRSITSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String) extends {
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
   val stopPercentage: Double = 10
 } with TradingSystemActor {
 
   var hasTrade = false
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10);
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
 
   /**
    * Train the system.
@@ -51,7 +51,7 @@ class DirectRSITSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Sig
   }
 }
 
-object DirectRSITSActor {
+object OppositeRSITSActor {
   def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String): Props =
-    Props(new DirectRSITSActor(trainingMarketDataSet, signalWriterIn, tsSettingPath))
+    Props(new OppositeRSITSActor(trainingMarketDataSet, signalWriterIn, tsSettingPath))
 }

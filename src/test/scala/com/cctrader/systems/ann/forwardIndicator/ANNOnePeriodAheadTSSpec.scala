@@ -1,4 +1,4 @@
-package com.cctrader.systems.ann.oneperiodahead
+package com.cctrader.systems.ann.forwardIndicator
 
 import com.cctrader.UnitTest
 

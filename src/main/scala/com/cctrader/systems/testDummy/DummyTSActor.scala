@@ -1,4 +1,4 @@
-package com.cctrader.systems.dummy
+package com.cctrader.systems.testDummy
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor

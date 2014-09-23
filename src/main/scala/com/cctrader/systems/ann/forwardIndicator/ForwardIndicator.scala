@@ -1,4 +1,4 @@
-package com.cctrader.systems.ann.oneperiodahead
+package com.cctrader.systems.ann.forwardIndicator
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
@@ -17,8 +17,8 @@ import org.encog.neural.networks.training.{Train, TrainingSetScore}
 /**
  *
  */
-class ANNBitcoin(settingsPath: String) {
-  println("ANNBitcoin has started")
+class ForwardIndicator(settingsPath: String) {
+  println("ForwardIndicator has started")
   var network = new BasicNetwork
 
   // sett configs

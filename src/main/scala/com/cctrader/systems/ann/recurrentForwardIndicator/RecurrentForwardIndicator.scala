@@ -1,4 +1,4 @@
-package com.cctrader.systems.ann.recurrent
+package com.cctrader.systems.ann.recurrentForwardIndicator
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
@@ -18,7 +18,7 @@ import org.encog.neural.pattern.{JordanPattern, ElmanPattern}
 /**
  *
  */
-class ANNRecurrentBitcoin(settingsPath: String) {
+class RecurrentForwardIndicator(settingsPath: String) {
 
   // sett configs
   val config = ConfigFactory.load(settingsPath)
@@ -51,7 +51,7 @@ class ANNRecurrentBitcoin(settingsPath: String) {
   )
   //outputHelper
   val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3)
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(20);
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(20)
 
   private final val pointsNeededToCompute: Int = 27
   private val network = createElmanNetwork(indicatorsINPUT.length, neuronsInHiddenLayer1, neuronsInHiddenLayer2, neuronsInHiddenLayer3, 1)
@@ -102,7 +102,7 @@ class ANNRecurrentBitcoin(settingsPath: String) {
     var lastError: Double = Double.MaxValue
     var lastAnneal: Int = 0
     for (epoch <- 0 until trainingIterations) {
-      train.iteration
+      train.iteration()
       val error: Double = train.getError
       println("Iteration(Backprop) #" + epoch + " Error:" + error)
       if (error > 0.05) {
@@ -117,7 +117,7 @@ class ANNRecurrentBitcoin(settingsPath: String) {
 
     trainingIterations = config.getInt("ml.laterTrainingIterations")
     println("Training done! Final error: " + train.getError)
-    return train.getError
+    train.getError
   }
 
   /**
@@ -129,7 +129,7 @@ class ANNRecurrentBitcoin(settingsPath: String) {
     System.out.println("Training with simulated annealing for 5 iterations")
     val train: NeuralSimulatedAnnealing = new NeuralSimulatedAnnealing(network, new TrainingSetScore(mlDataSet), 10, 2, 100)
     for (epoch <- 0 until 5) {
-      train.iteration
+      train.iteration()
       System.out.println("Iteration(Anneal) #" + epoch + " Error:" + train.getError)
     }
   }
@@ -144,7 +144,7 @@ class ANNRecurrentBitcoin(settingsPath: String) {
     val predictData: MLData = network.compute(new BasicMLData(indicatorsINPUT.map(_(data.size - 1, data)).toArray))
     val predict: Double = predictData.getData(0)
     System.out.println("predict:" + predict)
-    return predict
+    predict
   }
 
 

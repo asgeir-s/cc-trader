@@ -1,19 +1,24 @@
-package com.cctrader.systems.ann.recurrent
+package com.cctrader.systems.ann.forwardIndicator
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{MarketDataSet, Signal, Signaler}
+import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
+import com.cctrader.indicators.machin.ANNOnePeriodAhead
+import com.cctrader.indicators.technical.RelativeStrengthIndex
 import com.typesafe.config.ConfigFactory
 
 /**
  *
  */
-class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, settingPath: String) extends {
+class ForwardIndicatorsTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, settingPath: String) extends {
   val config = ConfigFactory.load(settingPath)
   val signalWriter = signalWriterIn
   var marketDataSet = trainingMarketDataSet
   val stopPercentage = config.getDouble("thresholds.stopPercentage")
 } with TradingSystemActor {
+
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
+
 
   val thresholdLong = config.getDouble("thresholds.long")
   val thresholdShort = config.getDouble("thresholds.short")
@@ -23,8 +28,9 @@ class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signa
   val continueTrainingInterval = config.getInt("ml.continueTrainingInterval")
   val continueTrainingSetSize = config.getInt("ml.continueTrainingSetSize")
 
-  var count = 0;
-  val ann = new ANNRecurrentBitcoin(settingPath)
+  var count = 0
+  //val aNNOnePeriodAhead = new ANNOnePeriodAhead(tsSetting)
+  val ann = new ForwardIndicator(settingPath)
   var lastPredict:Double = 0
 
 
@@ -46,6 +52,7 @@ class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signa
    * @return BUY, SELL or HOLD signal
    */
   override def newDataPoint() {
+    val rsiToDay = relativeStrengthIndex(marketDataSet.size-1, marketDataSet)
     val prediction = ann(marketDataSet)
     println("prediction: " + prediction)
 
@@ -57,17 +64,17 @@ class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signa
       goCloseStopTestMode(signalWriter.lastTrade.price * (1 + (stopPercentage/100)))
     }
 
-    if (signalWriter.status == Signal.SHORT && prediction > thresholdCloseShort) {
+    if (signalWriter.status == Signal.SHORT && rsiToDay > 50) {
       goClose
     }
-    else if (signalWriter.status == Signal.LONG && prediction < thresholdCloseLong) {
+    else if (signalWriter.status == Signal.LONG && rsiToDay < 50) {
       goClose
     }
 
-    if (prediction > thresholdLong) { //0.4
+    if (prediction > thresholdLong || rsiToDay > 70) { //0.4
         goLong
     }
-    else if (prediction < thresholdShort){ // 0.4
+    else if (prediction < thresholdShort || rsiToDay <  30){ // 0.4
         goShort
     }
     count+=1
@@ -79,7 +86,7 @@ class ANNRecurrentTS(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signa
   }
 }
 
-object ANNRecurrentTS {
+object ForwardIndicatorsTSActor {
   def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: String): Props =
-    Props(new ANNRecurrentTS(trainingMarketDataSet, signalWriterIn, tsSetting))
+    Props(new ForwardIndicatorsTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
 }

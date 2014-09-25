@@ -1,0 +1,44 @@
+Day:	
+Classical_WilliamR_day_			n=15 	x
+Classical_Opposite_RSI_day_		n=6 	x
+Classical_Disparity_day_		n=10
+Classical_Aroon_day_			n=10 	x
+Classical_Opposite_MACD_day_	fast=3-5, slow=15
+
+12 Hour:
+Classical_Opposite_RSI_day_		n=7
+Classical_ROC_day_				n=11
+Classical_Opposite_MACD_day_	fast=3, slow=24
+Classical_WilliamR_day_			n=10
+Classical_Disparity_day_		n=18/19/20
+
+
+5 Hour:
+Classical_WilliamR_day_			n=11
+Classical_Opposite_MACD_day_	fast=8, slow=30
+Classical_Aroon_day_			x
+Classical_Disparity_day_		x
+
+2 Hour:
+Classical_Opposite_RSI_day_ - n=10
+Classical_Aroon_day_		- n=11
+
+1 Hour:
+
+30 Min:
+
+
+Favoritter:
+http://localhost:9000/#/ts/Classical_ROC_day_/30/bitfinex_btc_usd_12hour/1389308400/1411610794
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/29/bitfinex_btc_usd_12hour/1389308400/1411610803
+
+http://localhost:9000/#/ts/Classical_Disparity_day_/18/bitfinex_btc_usd_day/1389308400/1411610845
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/42/bitfinex_btc_usd_2hour/1389308400/1411610699
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/15/bitfinex_btc_usd_day/1389308400/1411610833
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/28/bitfinex_btc_usd_12hour/1389308400/1411610782
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/35/bitfinex_btc_usd_5hour/1389308400/1411610752

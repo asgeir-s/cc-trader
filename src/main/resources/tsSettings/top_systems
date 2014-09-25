@@ -1,0 +1,41 @@
+Dette kan være innput til klassifiseringen
+
+Favoritter:
+
+http://localhost:9000/#/ts/Classical_ROC_day_/8/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/6/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Disparity_day_/7/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/10/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Disparity_day_/11/bitfinex_btc_usd_day/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/3/bitfinex_btc_usd_2hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/12/bitfinex_btc_usd_day/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_WilliamR_day_/9/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/4/bitfinex_btc_usd_5hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_WilliamR_day_/5/bitfinex_btc_usd_5hour/1388530800/1411649399
+
+
+TOP 4:
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/6/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/10/bitfinex_btc_usd_12hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/3/bitfinex_btc_usd_2hour/1388530800/1411649399
+
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/12/bitfinex_btc_usd_day/1388530800/1411649399
+
+
+WINNER (fast):
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/3/bitfinex_btc_usd_2hour/1401573600/1411649399
+
+WINNER (slow):
+http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/6/bitfinex_btc_usd_12hour/1377986400/1411649399

@@ -31,21 +31,22 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   var mode = Mode.TESTING
   var marketDataSet: MarketDataSet = null
   var liveDataActor: ActorRef = _
-  val numberOfLivePointsAtTheTimeForBackTest: Int
+  val numberOfLivePointsAtTheTimeForBackTest: Int = 100 //HARD CODED!
   var transferToNextSystemDate: Date = new Date(0)
   var numberOfPointsProcessedByCurrentSystem = 0
   var hasRunningTS = false
   var messageDPCount = 0
   var countTradingSystemsUsed = 0
-  var tradingSystemDate = new Date(config.getLong("startUnixTime") * 1000L) // summer 2013: 1375228800L 1. januart: 1388448000L * 1000L år 2000: 946684800 // TODO: config
+  val appConfig = ConfigFactory.load()
+  var tradingSystemDate = new Date(appConfig.getLong("startUnixTime") * 1000L) // summer 2013: 1375228800L 1. januart: 1388448000L * 1000L år 2000: 946684800
   var nextSystemReady: Boolean = false
   val name = config.getString("name")
-  val numberOfPredictionsPerTS = config.getInt("numberOfPredictionsBeforeNewTS")
+  val numberOfPredictionsPerTS = config.getInt("numberOfPredictionsBeforeNewTSActor")
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemDate,
-    numberOfHistoricalPoints = config.getInt("trainingSetSize"), //40
-    instrument = config.getString("tsTable")
+    numberOfHistoricalPoints = config.getInt("initialtrainingSetSize"), //40
+    instrument = appConfig.getString("instrumentTable")
   )
 
   val databaseFactory = Database.forURL(
@@ -164,7 +165,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
         nextSystemReady = false
         hasRunningTS = true
       }
-      if (numberOfPredictionsPerTS != 0 && numberOfPointsProcessedByCurrentSystem == numberOfPredictionsPerTS) {
+      if (numberOfPredictionsPerTS > 0 && numberOfPointsProcessedByCurrentSystem == numberOfPredictionsPerTS) {
         log.debug("Starts a new tradingSystem")
         startAndTrainNewSystem(newCopyOfMarketDataSet(marketDataSet))
       }

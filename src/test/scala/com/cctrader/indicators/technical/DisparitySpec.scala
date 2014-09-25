@@ -28,8 +28,8 @@ class DisparitySpec extends UnitTest {
   )
 
   val marketDataSet = new MarketDataSet(dataPointList, marketDataSettings)
-  val disparity4 = new Disparity(4)
-  val disparity7 = new Disparity(7)
+  val disparity4 = new DisparityIndex(4)
+  val disparity7 = new DisparityIndex(7)
 
   /**
    * calculated by hand

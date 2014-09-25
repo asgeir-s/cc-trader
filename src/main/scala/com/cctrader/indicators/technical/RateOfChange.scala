@@ -19,6 +19,6 @@ class RateOfChange(n: Int) extends InputIndicator{
    * @return
    */
   override def apply(t: Int, data: MarketDataSet): Double = {
-    (data(t).close / data(t-n).close) * 100
+    (data(t).close - data(t-n).close)/ (data(t-n).close)
   }
 }

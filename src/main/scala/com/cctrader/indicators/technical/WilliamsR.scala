@@ -31,7 +31,6 @@ class WilliamsR(n: Int) extends InputIndicator {
         lowestLowPrice = data(i).low
       }
     }
-
     (((highestHighPrice - data(t).close) / (highestHighPrice - lowestLowPrice)) ) * 100
   }
 }

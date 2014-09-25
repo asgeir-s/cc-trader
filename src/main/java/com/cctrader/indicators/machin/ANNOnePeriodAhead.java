@@ -29,9 +29,9 @@ public class ANNOnePeriodAhead implements MachineIndicator {
     private final int pointsNeededToCompute = 30;
 
     //Input:
-    AccumulationDistributionOscillator accumulationDistributionOscillator = new AccumulationDistributionOscillator();
+    AccumulationDistribution accumulationDistribution = new AccumulationDistribution();
     AroonOscillator aroonOscillator = new AroonOscillator(25);
-    Disparity disparity = new Disparity(10);
+    DisparityIndex disparityIndex = new DisparityIndex(10);
     Momentum momentum = new Momentum(5);
     MovingAverageExponentialConvergence maec = new MovingAverageExponentialConvergence(9, 26);
     PriceOscillator priceOscillator = new PriceOscillator(9, 26);
@@ -235,9 +235,9 @@ public class ANNOnePeriodAhead implements MachineIndicator {
     private double[] getIndicatorArrayForIndex(MarketDataSet marketDataSet, int index) {
         double[] indicatorArray = new double[15];
 
-        indicatorArray[0] = normal(accumulationDistributionOscillator.apply(index, marketDataSet));
+        indicatorArray[0] = normal(accumulationDistribution.apply(index, marketDataSet));
         indicatorArray[1] = normal(aroonOscillator.apply(index, marketDataSet) / 100D);
-        indicatorArray[2] = normal(disparity.apply(index, marketDataSet) / 100D);
+        indicatorArray[2] = normal(disparityIndex.apply(index, marketDataSet) / 100D);
         indicatorArray[3] = normal(momentum.apply(index, marketDataSet) / 100D);
         indicatorArray[4] = normal(maec.apply(index, marketDataSet) / 100D);
         indicatorArray[5] = normal(priceOscillator.apply(index, marketDataSet)); // Stryrer alt

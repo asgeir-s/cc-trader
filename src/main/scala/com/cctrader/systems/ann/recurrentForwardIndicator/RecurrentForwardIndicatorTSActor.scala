@@ -8,20 +8,11 @@ import com.typesafe.config.ConfigFactory
 /**
  *
  */
-class RecurrentForwardIndicatorTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, settingPath: String) extends {
-  val config = ConfigFactory.load(settingPath)
+class RecurrentForwardIndicatorTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
+  var marketDataSet = marketDataSetIn
   val signalWriter = signalWriterIn
-  var marketDataSet = trainingMarketDataSet
-  val stopPercentage = config.getDouble("thresholds.stopPercentage")
+  val settingPath = settingPathIn
 } with TradingSystemActor {
-
-  val thresholdLong = config.getDouble("thresholds.long")
-  val thresholdShort = config.getDouble("thresholds.short")
-  val thresholdCloseShort = config.getDouble("thresholds.closeShort")
-  val thresholdCloseLong = config.getDouble("thresholds.closeLong")
-
-  val continueTrainingInterval = config.getInt("ml.continueTrainingInterval")
-  val continueTrainingSetSize = config.getInt("ml.continueTrainingSetSize")
 
   var count = 0
   val ann = new RecurrentForwardIndicator(settingPath)
@@ -33,7 +24,7 @@ class RecurrentForwardIndicatorTSActor(trainingMarketDataSet: MarketDataSet, sig
    * If the system does not need training, return 0
    * @return timestamp in milliseconds for training duration. Timestamp at end of training - start timestamp.
    */
-  override def train(): Long = {
+  override def train(marketDataSet: MarketDataSet): Long = {
     val startTrainingTime = System.currentTimeMillis()
     ann.train(marketDataSet)
     val endTrainingTime = System.currentTimeMillis()
@@ -72,7 +63,7 @@ class RecurrentForwardIndicatorTSActor(trainingMarketDataSet: MarketDataSet, sig
     }
     count+=1
     if(count == continueTrainingInterval) {
-      ann.train(marketDataSet.subset(marketDataSet.size - continueTrainingSetSize, marketDataSet.size-1))
+      ann.train(marketDataSet.subset(marketDataSet.size - laterTrainingInterval, marketDataSet.size-1))
       count = 0
     }
     lastPredict = prediction

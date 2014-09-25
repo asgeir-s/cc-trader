@@ -28,8 +28,8 @@ class AccumulationDistributionOscillatorSpec extends UnitTest {
   )
 
   val marketDataSet = new MarketDataSet(dataPointList, marketDataSettings)
-  val accumulationDistributionOscillator4 = new AccumulationDistributionOscillator()
-  val accumulationDistributionOscillator2 = new AccumulationDistributionOscillator()
+  val accumulationDistributionOscillator4 = new AccumulationDistribution()
+  val accumulationDistributionOscillator2 = new AccumulationDistribution()
 
   /**
    * calculated by hand

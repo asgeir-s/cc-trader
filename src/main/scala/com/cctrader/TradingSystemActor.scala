@@ -2,6 +2,7 @@ package com.cctrader
 
 import akka.actor.{Actor, ActorLogging}
 import com.cctrader.data._
+import com.typesafe.config.ConfigFactory
 
 /**
  *
@@ -12,16 +13,26 @@ trait TradingSystemActor extends Actor with ActorLogging {
   var akkOn = 0
   var mode = Mode.TESTING
   var marketDataSet: MarketDataSet
-  val stopPercentage: Double
-
+  val settingPath: String
+  val config = ConfigFactory.load(settingPath)
   log.debug("Started: TradingSystemActor")
+  val stopPercentage = config.getDouble("thresholds.stopPercentage")
+  val thresholdLong = config.getDouble("thresholds.long")
+  val thresholdShort = config.getDouble("thresholds.short")
+  val thresholdCloseShort = config.getDouble("thresholds.closeShort")
+  val thresholdCloseLong = config.getDouble("thresholds.closeLong")
+
+  val continueTrainingInterval = config.getInt("laterTrainingInterval")
+  val laterTrainingInterval = config.getInt("laterTrainingSetSize")
+
+  var countDPnow = 0
 
   /**
    * Train the system.
    * If the system does not need training, return 0
    * @return timestamp in milliseconds for training duration. Timestamp at end of training - start timestamp.
    */
-  def train(): Long
+  def train(trainingMarketDataSet: MarketDataSet): Long
 
   /**
    * Called when a new dataPoint is received. As last in marketDataSet.
@@ -70,11 +81,26 @@ trait TradingSystemActor extends Actor with ActorLogging {
     }
   }
 
+  def checkStopPercentage: Unit = {
+    if(stopPercentage > 0 && stopPercentage < 100) {
+      if (signalWriter.status == Signal.LONG && (marketDataSet.last.low < signalWriter.lastTrade.price * (1 - (stopPercentage / 100)))) {
+        goCloseStopTestMode(signalWriter.lastTrade.price * (1 - (stopPercentage / 100)))
+      }
+
+      else if (signalWriter.status == Signal.SHORT && (marketDataSet.last.high > signalWriter.lastTrade.price * (1 + (stopPercentage / 100)))) {
+        goCloseStopTestMode(signalWriter.lastTrade.price * (1 + (stopPercentage / 100)))
+      }
+    }
+    else {
+      println("No stop percentage")
+    }
+  }
+
   override def receive: Receive = {
     case StartTraining(marketDataSetIn: MarketDataSet) =>
       log.debug("Received: StartTraining")
       marketDataSet = marketDataSetIn
-      val trainingTime = train()
+      val trainingTime = train(marketDataSet)
       sender ! TrainingDone(trainingTime)
       log.debug("Training done")
 
@@ -86,7 +112,16 @@ trait TradingSystemActor extends Actor with ActorLogging {
     case dataPoint: DataPoint =>
       log.debug("Received DataPoint: time:" + dataPoint.date + ", info:" + dataPoint)
       marketDataSet.addDataPoint(dataPoint)
+      //this does not work live. Only on test mode. To get the same effect on live trading
+      // set a stop/limit order at [currentPrice*(1+stopPercentage)]
+      checkStopPercentage
+      //evaluate the new dataPoint
       newDataPoint()
+      countDPnow+=1
+      if(continueTrainingInterval > 0 && countDPnow == continueTrainingInterval) {
+        train(marketDataSet.subset(marketDataSet.size - laterTrainingInterval, marketDataSet.size-1))
+        countDPnow = 0
+      }
 
       if (mode == Mode.TESTING) {
         dataPointCountInAkk = dataPointCountInAkk + 1
@@ -102,6 +137,7 @@ trait TradingSystemActor extends Actor with ActorLogging {
 
     case Mode.LIVE =>
       mode = Mode.LIVE
+      signalWriter.goLive
 
   }
 

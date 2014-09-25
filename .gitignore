@@ -9,3 +9,4 @@ test-output/
 *.iml
 .classpath_nb
 /download/*
+application.conf

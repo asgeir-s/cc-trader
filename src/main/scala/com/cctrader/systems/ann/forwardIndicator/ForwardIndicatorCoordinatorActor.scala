@@ -10,7 +10,6 @@ import com.cctrader.data._
 class ForwardIndicatorsCoordinatorActor(dataActorIn: ActorRef, tsSettingPathIn: String) extends {
   val tsSettingPath = tsSettingPathIn
   val dataActor = dataActorIn
-  val numberOfLivePointsAtTheTimeForBackTest = 100
 } with TSCoordinatorActor {
   def tsProps = ForwardIndicatorsTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSettingPath)
 }

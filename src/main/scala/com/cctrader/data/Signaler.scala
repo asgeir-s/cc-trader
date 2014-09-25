@@ -14,9 +14,10 @@ import scala.slick.jdbc.{StaticQuery => Q}
  */
 class Signaler(tsName: String, tsId: Long) {
 
-  val dbName = tsName.toLowerCase + tsId
+  val tableName = tsName.toLowerCase + tsId
   val config = ConfigFactory.load()
   var status = Signal.CLOSE
+  private var live = false
 
   val databaseFactory = Database.forURL(
     url = "jdbc:postgresql://" + config.getString("postgres.host") + ":" + config.getString("postgres.port") + "/" + config
@@ -28,7 +29,7 @@ class Signaler(tsName: String, tsId: Long) {
   implicit val session = databaseFactory.createSession()
 
   val table = TableQuery[MASignalTable]
-  if (makeTableMap.contains(dbName)) {
+  if (makeTableMap.contains(tableName)) {
     table.ddl.drop
   }
   table.ddl.create
@@ -39,10 +40,16 @@ class Signaler(tsName: String, tsId: Long) {
     table += Trade(None, (System.currentTimeMillis() / 1000).toInt, dataPoint.timestamp, signal.toString, dataPoint.close)
     //}
     // notify new trades (should this only happen live??)
-    Q.updateNA("NOTIFY " + dbName + " , '" + table.list.last.id + "'").execute
-
+    if(live) {
+      Q.updateNA("NOTIFY " + tableName + " , '" + table.list.last.id + "'").execute
+      println("NOTIFY " + tableName + " , '" + table.list.last.id + "'")
+    }
     println("Received: signal:" + signal + ", dataPoint:" + dataPoint)
     lastTrade
+  }
+
+  def goLive: Unit = {
+    live = true
   }
 
   def lastTrade: Trade = {
@@ -55,6 +62,6 @@ class Signaler(tsName: String, tsId: Long) {
     tableMap
   }
 
-  class MASignalTable(tag: Tag) extends Table[Trade](tag, dbName) with SignalTable {def * = common_*}
+  class MASignalTable(tag: Tag) extends Table[Trade](tag, tableName) with SignalTable {def * = common_*}
 
 }

@@ -11,10 +11,10 @@ import scala.slick.jdbc.{StaticQuery => Q}
  *
  * And used for testing of the TradingSystemActor trait.
  */
-class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String) extends {
+class DummyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
+  val settingPath = settingPathIn
   val signalWriter = signalWriterIn
-  var marketDataSet = trainingMarketDataSet
-  val stopPercentage: Double = 0
+  var marketDataSet = marketDataSetIn
 } with TradingSystemActor {
 
   var sell = false
@@ -24,7 +24,7 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signale
    * If the system does not need training, return 0
    * @return timestamp in milliseconds for training duration. Timestamp at end of training - start timestamp.
    */
-  override def train(): Long = {
+  override def train(marketDataSet: MarketDataSet): Long = {
     100L * 1000L
   }
 
@@ -39,6 +39,7 @@ class DummyTSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signale
       goClose
     }
   }
+
 }
 
 object DummyTSActor {

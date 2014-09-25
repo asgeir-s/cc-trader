@@ -9,7 +9,6 @@ import com.cctrader.TSCoordinatorActor
 class RecurrentCoordinatorActor(dataActorIn: ActorRef, tsSettingPathIn: String) extends {
   val tsSettingPath = tsSettingPathIn
   val dataActor = dataActorIn
-  val numberOfLivePointsAtTheTimeForBackTest = 100
 } with TSCoordinatorActor {
   def tsProps = RecurrentForwardIndicatorTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSettingPath)
 }

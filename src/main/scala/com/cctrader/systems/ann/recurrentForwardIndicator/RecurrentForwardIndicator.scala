@@ -34,9 +34,9 @@ class RecurrentForwardIndicator(settingsPath: String) {
   val stochasticK = new StochasticK(10)
   val stochasticD = new StochasticD(stochasticK, 3)
   val indicatorsINPUT: List[InputIndicator] = List(
-    new AccumulationDistributionOscillator,
+    new AccumulationDistribution,
     new AroonOscillator(25),
-    new Disparity(10),
+    new DisparityIndex(10),
     new Momentum(5),
     new MovingAverageExponentialConvergence(9, 26),
     new PriceOscillator(9, 26),

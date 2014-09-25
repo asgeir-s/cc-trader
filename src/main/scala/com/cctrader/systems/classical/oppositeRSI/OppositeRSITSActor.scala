@@ -8,21 +8,21 @@ import com.cctrader.indicators.technical.RelativeStrengthIndex
 /**
  *
  */
-class OppositeRSITSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSettingPath: String) extends {
+class OppositeRSITSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
+  var marketDataSet = marketDataSetIn
   val signalWriter = signalWriterIn
-  var marketDataSet = trainingMarketDataSet
-  val stopPercentage: Double = 10
+  val settingPath = settingPathIn
 } with TradingSystemActor {
 
   var hasTrade = false
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
+  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(config.getInt("formula.RSIPeriods"))
 
   /**
    * Train the system.
    * If the system does not need training, return 0
    * @return timestamp in milliseconds for training duration. Timestamp at end of training - start timestamp.
    */
-  override def train(): Long = {
+  override def train(marketDataSet: MarketDataSet): Long = {
     0
   }
 
@@ -30,21 +30,19 @@ class OppositeRSITSActor(trainingMarketDataSet: MarketDataSet, signalWriterIn: S
   override def newDataPoint() {
     val rsi = relativeStrengthIndex(marketDataSet.size - 1, marketDataSet)
     println("rsi:" + rsi)
-    if (rsi > 70) {
-      println("GO LONG")
+    if (rsi > thresholdLong) {
       goLong
       hasTrade = true
     }
-    else if (rsi < 30) {
-      println("GO SHORT")
+    else if (rsi < thresholdShort) {
       goShort
       hasTrade = true
     }
     if (hasTrade) {
-      if (rsi < 50 && signalWriter.status == Signal.LONG) {
+      if (rsi < thresholdCloseLong && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (rsi > 50 && signalWriter.status == Signal.SHORT) {
+      else if (rsi > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

@@ -23,7 +23,7 @@ class ForwardIndicator(settingsPath: String) {
 
   // sett configs
   val config = ConfigFactory.load(settingsPath)
-  var trainingIterations = config.getInt("ml.firstTrainingIterations")
+  var trainingIterations = config.getInt("initialTrainingIterations")
   val neuronsInHiddenLayer1: Int = config.getInt("ml.neuronsInLayer1")
   val neuronsInHiddenLayer2: Int = config.getInt("ml.neuronsInLayer2")
   val neuronsInHiddenLayer3: Int = config.getInt("ml.neuronsInLayer3")
@@ -39,9 +39,9 @@ class ForwardIndicator(settingsPath: String) {
   val stochasticD = new StochasticD(stochasticK, 3)
 
   val indicatorsINPUT: List[InputIndicator] = List(
-    new AccumulationDistributionOscillator,               // kan ikke normalizered nå
+    new AccumulationDistribution,               // kan ikke normalizered nå
     new AroonOscillator(25),
-    new Disparity(10),                                    // kan ikke normalizered nå
+    new DisparityIndex(10),                                    // kan ikke normalizered nå
     new Momentum(5),                                      // kan ikke normalizered nå
     new MovingAverageExponentialConvergence(9, 26),       // kan ikke normalizered nå
     new PriceOscillator(9, 26),                           // kan ikke normalizered nå
@@ -181,7 +181,7 @@ val indicatorsINPUT: List[Normalizable] = List(
       epoch += 1
     } while (epoch < trainingIterations)
 
-    trainingIterations = config.getInt("ml.laterTrainingIterations")
+    trainingIterations = config.getInt("laterTrainingIterations")
     println("Training done! Final error: " + train.getError)
     initialtraining = false
     train.getError

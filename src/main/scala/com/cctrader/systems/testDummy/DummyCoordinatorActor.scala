@@ -12,7 +12,6 @@ import com.cctrader.data._
 class DummyCoordinatorActor(dataActorIn: ActorRef, tsSettingPathIn: String) extends {
   val tsSettingPath: String = tsSettingPathIn
   val dataActor = dataActorIn
-  val numberOfLivePointsAtTheTimeForBackTest = 100
 } with TSCoordinatorActor {
 
   def tsProps = DummyTSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSettingPath)

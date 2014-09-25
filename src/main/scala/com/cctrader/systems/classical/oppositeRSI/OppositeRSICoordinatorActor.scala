@@ -7,10 +7,9 @@ import com.cctrader.systems.testDummy.DummyTSActor
 /**
  *
  */
-class OppositeRSICoordinatorActor (dataActorIn: ActorRef, tsSettingPathIn: String) extends {
+class OppositeRSICoordinatorActor(dataActorIn: ActorRef, tsSettingPathIn: String) extends {
   val tsSettingPath: String = tsSettingPathIn
   val dataActor = dataActorIn
-  val numberOfLivePointsAtTheTimeForBackTest = 100
 } with TSCoordinatorActor {
 
   def tsProps = OppositeRSITSActor.props(newCopyOfMarketDataSet(marketDataSet), signalWriter, tsSettingPath)

@@ -39,3 +39,6 @@ http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/3/bitfinex_btc_usd_2hour/
 
 WINNER (slow):
 http://localhost:9000/#/ts/Classical_Opposite_MACD_day_/6/bitfinex_btc_usd_12hour/1377986400/1411649399
+
+WINNER (medium):
+http://localhost:9000/#/ts/Classical_Opposite_RSI_day_/47/bitfinex_btc_usd_12hour/1388530800/1411661420

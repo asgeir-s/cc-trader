@@ -42,12 +42,12 @@ class MasterActor extends Actor with ActorLogging {
   //context.actorOf(RSICoordinatorActor.props(dataActor, "tsSettings/classical/RSI/RSI_Day.conf"))
   //context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC_Day.conf"))
   //context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR_Day.conf"))
-  context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity_Day.conf"))
+  //context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity_Day.conf"))
   //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_Day.conf"))
   //context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD_Day.conf"))
 
   //Classical Opposite Day
-  //context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_Day.conf"))
+  context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_Day.conf"))
   context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD_Day.conf"))
   //context.actorOf(OppositeROCCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeROC/OppositeROC_Day.conf"))
   //context.actorOf(OppositeWilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeWilliamR/OppositeWilliamR_Day.conf"))

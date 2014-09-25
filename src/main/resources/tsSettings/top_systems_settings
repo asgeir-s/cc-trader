@@ -6,9 +6,9 @@ Classical_Aroon_day_			n=10 	x
 Classical_Opposite_MACD_day_	fast=3-5, slow=15
 
 12 Hour:
-Classical_Opposite_RSI_day_		n=7
+!Classical_Opposite_RSI_day_	n=7
 Classical_ROC_day_				n=11
-Classical_Opposite_MACD_day_	fast=3, slow=24
+!Classical_Opposite_MACD_day_	fast=3, slow=24
 Classical_WilliamR_day_			n=10
 Classical_Disparity_day_		n=18/19/20
 

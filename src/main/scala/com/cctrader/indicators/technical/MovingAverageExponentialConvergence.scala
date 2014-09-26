@@ -20,4 +20,5 @@ class MovingAverageExponentialConvergence (fastN: Int, slowN: Int) extends Input
 
     (fastMovingAverage.apply(t, data) - slowMovingAverage.apply(t, data))
   }
+
 }

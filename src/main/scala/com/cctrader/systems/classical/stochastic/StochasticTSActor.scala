@@ -35,6 +35,7 @@ class StochasticTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler
     val stochasticKValue = stochasticK(marketDataSet.size-1, marketDataSet)
     val stochasticDValue = stochasticD(marketDataSet.size-1, marketDataSet)
     val diff = stochasticKValue - stochasticDValue
+    println("diff:" + diff)
 
     if (signalWriter.status == Signal.SHORT && diff > thresholdCloseShort) {
       goClose

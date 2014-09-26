@@ -44,7 +44,9 @@ class MasterActor extends Actor with ActorLogging {
   context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon" + granularity +".conf"))
   context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD" + granularity +".conf"))
 
+
   //Classical Opposite
+  /*
   context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI" + granularity +".conf"))
   context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD" + granularity +".conf"))
   context.actorOf(OppositeROCCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeROC/OppositeROC" + granularity +".conf"))
@@ -52,7 +54,7 @@ class MasterActor extends Actor with ActorLogging {
   context.actorOf(OppositeDisparityCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeDisparity/OppositeDisparity" + granularity +".conf"))
   context.actorOf(OppositeAroonCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeAroon/OppositeAroon" + granularity +".conf"))
   context.actorOf(OppositeStochasticCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeStochastic/OppositeStochastic" + granularity +".conf"))
-
+*/
 
   override def receive: Receive = {
     case _ =>

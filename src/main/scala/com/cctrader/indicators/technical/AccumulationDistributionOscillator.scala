@@ -12,9 +12,7 @@ import com.cctrader.indicators.InputIndicator
  *
  * normOutRang needs to be set to use normalization
  */
-class AccumulationDistribution extends InputIndicator {
-
-  var lastAD = 0D
+class AccumulationDistributionOscillator extends InputIndicator {
   /**
    * Calculating the indicator.
    *
@@ -23,8 +21,8 @@ class AccumulationDistribution extends InputIndicator {
    * @return
    */
   override def apply(t: Int, data: MarketDataSet): Double = {
-    val indicator = lastAD + (((data(t).close-data(t).low)-(data(t).high-data(t).close))/(data(t).high-data(t).low))*data(t).volume
-    lastAD = indicator
+    val indicator = (data(t).high - data(t - 1).close) / (data(t).high - data(t).low)
+
     // ensures that a number is returned
     if (indicator > Double.MinValue && indicator < Double.MaxValue) {indicator}
     else {0}

@@ -16,8 +16,6 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
   val settingPath = settingPathIn
 } with TradingSystemActor {
 
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
-
   var count = 0
   val ann = new ForwardIndicator(settingPath)
   var lastPredict:Double = 0
@@ -34,7 +32,7 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
-  val roccer = new RateOfChange(11)
+  val rateOfChange = new RateOfChange(config.getInt("formula.ROCPeriods"))
   var hasTrade = false
   /**
    * Evaluate new dataPoint.
@@ -42,14 +40,14 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
    * @return BUY, SELL or HOLD signal
    */
   override def newDataPoint() {
-    val roc = roccer(marketDataSet.size-1, marketDataSet)
-    val predict = ann(marketDataSet)
-    println("roc:" + predict)
-    if ( roc > thresholdLong || predict > thresholdLong) {
+    val roc = rateOfChange(marketDataSet.size-1, marketDataSet)
+    //val predict = ann(marketDataSet)
+    //println("roc:" + predict)
+    if ( roc > thresholdLong ) {
       goLong
       hasTrade = true
     }
-    else if ( roc < thresholdShort || predict < thresholdShort) {
+    else if ( roc < thresholdShort ) {
       goShort
       hasTrade = true
     }

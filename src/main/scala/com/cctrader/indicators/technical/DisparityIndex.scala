@@ -22,4 +22,5 @@ class DisparityIndex(n: Int) extends InputIndicator{
     val movingAverage = new MovingAveragePrice(n)
     (data(t).close- movingAverage(t, data))/(movingAverage(t, data)) * 100
   }
+
 }

@@ -29,7 +29,7 @@ public class ANNOnePeriodAhead implements MachineIndicator {
     private final int pointsNeededToCompute = 30;
 
     //Input:
-    AccumulationDistribution accumulationDistribution = new AccumulationDistribution();
+    AccumulationDistributionOscillator accumulationDistribution = new AccumulationDistributionOscillator();
     AroonOscillator aroonOscillator = new AroonOscillator(25);
     DisparityIndex disparityIndex = new DisparityIndex(10);
     Momentum momentum = new Momentum(5);

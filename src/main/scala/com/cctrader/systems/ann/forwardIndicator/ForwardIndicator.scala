@@ -37,12 +37,12 @@ class ForwardIndicator(settingsPath: String) {
   // inputs
   val stochasticK = new StochasticK(10)
   val stochasticD = new StochasticD(stochasticK, 3)
-  val roc = new RateOfChange(11)
+  val roc = new RateOfChange(config.getInt("formula.ROCPeriods"))
 
   val indicatorsINPUT: List[InputIndicator] = List(
-    new AccumulationDistribution,               // kan ikke normalizered nå
+    new AccumulationDistributionOscillator,                         // denne er strengt økende og ikke en ozilator
     new AroonOscillator(25),
-    new DisparityIndex(10),                                    // kan ikke normalizered nå
+    new DisparityIndex(10),                               // kan ikke normalizered nå
     new Momentum(5),                                      // kan ikke normalizered nå
     new MovingAverageExponentialConvergence(9, 26),       // kan ikke normalizered nå
     new PriceOscillator(9, 26),                           // kan ikke normalizered nå
@@ -68,8 +68,6 @@ val indicatorsINPUT: List[Normalizable] = List(
   new WilliamsR(25)
 )
 */
-
-
 
   //outputHelper
   val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3) //10
@@ -117,7 +115,7 @@ val indicatorsINPUT: List[Normalizable] = List(
     var input: Array[Double] = Array[Double]()
     if(normalizeInput) {
       for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x.getNormalized(index-j, data)).toArray
+        input = input ++: indicatorsINPUT.map(x => x.getReScaled(index-j, data)).toArray
       }
     }
     else {

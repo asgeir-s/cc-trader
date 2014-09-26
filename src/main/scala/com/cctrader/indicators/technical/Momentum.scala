@@ -21,4 +21,5 @@ class Momentum(n: Int) extends InputIndicator {
   override def apply(t: Int, data: MarketDataSet): Double = {
     (data(t).close - data(t-n).close)
   }
+
 }

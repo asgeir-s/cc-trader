@@ -28,21 +28,21 @@ class AroonTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, set
 
 
   override def newDataPoint() {
-    val disparity = indicator(marketDataSet.size - 1, marketDataSet)
-    println("aroon:" + disparity)
-    if (disparity > thresholdLong) {
+    val aroon = indicator(marketDataSet.size - 1, marketDataSet)
+    println("aroon:" + aroon)
+    if (aroon > thresholdLong) {
       goLong
       hasTrade = true
     }
-    else if (disparity < thresholdShort) {
+    else if (aroon < thresholdShort) {
       goShort
       hasTrade = true
     }
     if (hasTrade) {
-      if (disparity < thresholdCloseLong && signalWriter.status == Signal.LONG) {
+      if (aroon < thresholdCloseLong && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (disparity > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if (aroon > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

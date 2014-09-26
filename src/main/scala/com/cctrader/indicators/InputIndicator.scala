@@ -25,17 +25,24 @@ trait InputIndicator {
   def apply(t: Int, data: MarketDataSet): Double
 
   def setNormalizationBounds(data: MarketDataSet, pointsNeededToCompute: Int) {
+    var min = Double.MaxValue
+    var max = Double.MinValue
     for (i <- pointsNeededToCompute until data.size) {
       val value: Double = apply(i, data)
-      if(value < normMinIn) {
-        normMinIn = value
+      if(value < min) {
+        min = value
       }
-      else if(value > normMaxIn){
-        normMaxIn = value
+      else if(value > max){
+        max = value
       }
     }
-    normInSet = true
-    println("Normalization range set to:[" + normMinIn + ", " + normMaxIn + "]")
+    println("Should be Oscillator: minValue:" + min + ", maxValue:" + max + "")
+    if(Math.abs(min) > Math.abs(max)) {
+      normInRang(-Math.abs(min), Math.abs(min))
+    }
+    else {
+      normInRang(-Math.abs(max), Math.abs(max))
+    }
   }
 
   def normInRang(min: Double, max: Double): Unit = {
@@ -43,14 +50,15 @@ trait InputIndicator {
       normMinIn = min
       normMaxIn = max
       normInSet = true
+      println("Normalization range set to:[" + normMinIn + ", " + normMaxIn + "]")
     }
     else {
-      println("ERROR: normInRang already set")
+      println("ERROR: normInRang already set to: minValue:" + normMinIn + ", maxValue:" + normMaxIn)
     }
+
   }
 
   def normOutRange(min: Double, max: Double): Unit = {
-
     if (!normOutSet) {
       normMinOut = min
       normMaxOut = max
@@ -61,23 +69,13 @@ trait InputIndicator {
     }
   }
 
-  def getNormalized(index: Int, dataSet: MarketDataSet): Double = {
-    normalize(apply(index, dataSet))
+  def getReScaled(index: Int, dataSet: MarketDataSet): Double = {
+    reScaled(apply(index, dataSet))
   }
 
-  def normalize(value: Double) = {
+  def reScaled(value: Double) = {
     if (normInSet && normOutSet) {
-      normMinOut + (value - normMinIn) * (normMaxOut - normMinOut) / (normMaxIn - normMinIn)
-    }
-    else {
-      println("ERROR: normOutRang or normInRang not set")
-      Double.NaN
-    }
-  }
-
-  def deNormalize(value: Double) = {
-    if (normInSet && normOutSet) {
-      normMinOut - (value + normMinIn) / (normMaxOut + normMinOut) * (normMaxIn - normMinIn)
+      (value - normMinIn) * (normMaxOut - normMinOut) / (normMaxIn - normMinIn) + normMinOut
     }
     else {
       println("ERROR: normOutRang or normInRang not set")

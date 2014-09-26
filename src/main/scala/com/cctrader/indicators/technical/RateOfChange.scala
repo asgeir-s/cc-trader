@@ -19,8 +19,4 @@ class RateOfChange(n: Int) extends InputIndicator{
     (data(t).close - data(t-n).close)/ (data(t-n).close)
   }
 
-  override def getNormalized(index: Int, dataSet: MarketDataSet): Double = {
-    apply(index, dataSet)
-
-  }
 }

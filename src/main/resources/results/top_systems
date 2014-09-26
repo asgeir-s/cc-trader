@@ -1,0 +1,23 @@
+TOP CLASSICAL SYSTEMS:
+
+2 HOUR:
+%R
+AO
+
+6 HOUR:
+            !ROC
+%R
+            !DI
+    !-AO
+
+12 HOUR:
+            !ROC
+    !-%R
+            !DI
+AO
+
+DAY:
+    !-ROC
+%R
+    !-DI
+            !AO

@@ -20,4 +20,5 @@ class PriceOscillator(fastN: Int, slowN: Int) extends InputIndicator{
 
     (fastMovingAverage.apply(t, data)- slowMovingAverage.apply(t, data)) / fastMovingAverage.apply(t, data)
   }
+
 }

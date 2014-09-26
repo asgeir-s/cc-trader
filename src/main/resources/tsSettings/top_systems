@@ -1,5 +1,8 @@
 Dette kan være innput til klassifiseringen
 
+TRADING NOW:
+Classical_Opposite_MACD_day_ 12 hour thresholds.long:-4, thresholds.short:4, thresholdsCloses:0 , fast: 3, slow:24
+
 Favoritter:
 
 http://localhost:9000/#/ts/Classical_ROC_day_/8/bitfinex_btc_usd_12hour/1388530800/1411649399

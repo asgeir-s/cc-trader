@@ -4,7 +4,7 @@ import akka.actor.Props
 import com.cctrader.TradingSystemActor
 import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
 import com.cctrader.indicators.machin.ANNOnePeriodAhead
-import com.cctrader.indicators.technical.RelativeStrengthIndex
+import com.cctrader.indicators.technical.{RateOfChange, RelativeStrengthIndex}
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -34,13 +34,35 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
-
+  val roccer = new RateOfChange(11)
+  var hasTrade = false
   /**
    * Evaluate new dataPoint.
    * Should be of the same granularity as the training set.
    * @return BUY, SELL or HOLD signal
    */
   override def newDataPoint() {
+    val roc = roccer(marketDataSet.size-1, marketDataSet)
+    val predict = ann(marketDataSet)
+    println("roc:" + predict)
+    if ( roc > thresholdLong || predict > thresholdLong) {
+      goLong
+      hasTrade = true
+    }
+    else if ( roc < thresholdShort || predict < thresholdShort) {
+      goShort
+      hasTrade = true
+    }
+    if (hasTrade) {
+      if (( roc < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
+        goClose
+      }
+      else if (( roc > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
+        goClose
+      }
+    }
+
+    /*
     val rsiToDay = relativeStrengthIndex(marketDataSet.size-1, marketDataSet)
     val prediction = ann(marketDataSet)
     println("Prediction: " + prediction)
@@ -59,6 +81,7 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     else if (prediction < thresholdShort || rsiToDay <  30){ // 0.4
         goShort
     }
+    */
   }
 }
 

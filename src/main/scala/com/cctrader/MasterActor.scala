@@ -18,62 +18,41 @@ import com.cctrader.systems.classical.oppositeMACD.OppositeMACDCoordinatorActor
 import com.cctrader.systems.classical.oppositeRSI.OppositeRSICoordinatorActor
 import com.cctrader.systems.classical.stochastic.StochasticCoordinatorActor
 import com.cctrader.systems.testDummy.DummyCoordinatorActor
+import com.typesafe.config.ConfigFactory
 
 /**
  *
  */
 class MasterActor extends Actor with ActorLogging {
 
+  val config = ConfigFactory.load()
+  val tableName = config.getString("instrumentTable")
+  val granularity = tableName.substring(tableName.lastIndexOf('_'))
+
   val dataActor = context.actorOf(Props[DataActor], "dataActor")
 
-  //all TSCoordinators to run should be listed here
-  //val dummyCoordinatorActor = context.actorOf( DummyCoordinatorActor.props(dataActor, dataReady), "Dummy")
-  //val annOnePeriodAhead = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "stock_tsla_daily"), "ANNOnePeriodAhead1") // bitstamp_btc_usd_day
+  //ANN
+  //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/ROC/ROC" + granularity +".conf"))
+  //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/RSI/OppositeRSI" + granularity +".conf"))
 
-  //val annRecurrentOnePeriodAhead = context.actorOf(RecurrentCoordinatorActor.props(dataActor, "tsSettings/Recurrent_Hour1.conf"))
-  //val annOnePeriodAheadHour = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Hour1.conf"))
-  //val oppositeANNDay1 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day2.conf"))
-  //val oppositeANNDay2 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day3.conf"))
-  //val oppositeANNDay3 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day4.conf"))
-  //val oppositeANNDay4 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann.forwardIndicator/OppositeRSI_Day5.conf"))
+  //Classical
+  context.actorOf(StochasticCoordinatorActor.props(dataActor, "tsSettings/classical/stochastic/Stochastic" + granularity +".conf"))
+  context.actorOf(RSICoordinatorActor.props(dataActor, "tsSettings/classical/RSI/RSI" + granularity +".conf"))
+  context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC" + granularity +".conf"))
+  context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR" + granularity +".conf"))
+  context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity" + granularity +".conf"))
+  context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon" + granularity +".conf"))
+  context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD" + granularity +".conf"))
 
-  //Classical Day
-  //context.actorOf(StochasticCoordinatorActor.props(dataActor, "tsSettings/classical/stochastic/Stochastic_Day.conf"))
-  //context.actorOf(RSICoordinatorActor.props(dataActor, "tsSettings/classical/RSI/RSI_Day.conf"))
-  //context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC_Day.conf"))
-  //context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR_Day.conf"))
-  //context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity_Day.conf"))
-  //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_Day.conf"))
-  //context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD_Day.conf"))
+  //Classical Opposite
+  context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI" + granularity +".conf"))
+  context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD" + granularity +".conf"))
+  context.actorOf(OppositeROCCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeROC/OppositeROC" + granularity +".conf"))
+  context.actorOf(OppositeWilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeWilliamR/OppositeWilliamR" + granularity +".conf"))
+  context.actorOf(OppositeDisparityCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeDisparity/OppositeDisparity" + granularity +".conf"))
+  context.actorOf(OppositeAroonCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeAroon/OppositeAroon" + granularity +".conf"))
+  context.actorOf(OppositeStochasticCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeStochastic/OppositeStochastic" + granularity +".conf"))
 
-  //Classical Opposite Day
-  context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_Day.conf"))
-  context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD_Day.conf"))
-  //context.actorOf(OppositeROCCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeROC/OppositeROC_Day.conf"))
-  //context.actorOf(OppositeWilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeWilliamR/OppositeWilliamR_Day.conf"))
-  //context.actorOf(OppositeDisparityCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeDisparity/OppositeDisparity_Day.conf"))
-  //context.actorOf(OppositeAroonCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeAroon/OppositeAroon_Day.conf"))
-  //context.actorOf(OppositeStochasticCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeStochastic/OppositeStochastic_Day.conf"))
-
-
-  //Classical Hour
-  //val OppositeRSIHour = context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical.oppositeRSI/OppositeRSI_Hour.conf"))
-  //val stochasticHour = context.actorOf(StochasticOscillatorCoordinatorActor.props(dataActor, "tsSettings/classical.stochasticOscillator/Stochastic_Hour.conf"))
-  //val RSIHour = context.actorOf(RSICoordinatorActor.props(dataActor, "tsSettings/classical.RSI/RSI_Hour.conf")) //WTF!!
-  //val ROC1Hour = context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical.ROC/ROC_Hour.conf"))
-  //val williamRHour = context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical.WilliamR/WilliamR_Hour.conf"))
-  //val disparityHour = context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical.Disparity/Disparity_Hour.conf"))
-  //val aroonHour = context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical.Aroon/Aroon_Hour.conf"))
-  //val macdHour = context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical.MACD/MACD_Hour.conf"))
-  //val oppositeMACDHour = context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical.oppositeMACD/OppositeMACD_Hour.conf"))
-
-
-
-
-
-  //val annOnePeriodAhead1 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/OppositeRSI_Hour1.conf"))
-  //val annOnePeriodAhead3 = context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "stock_appl_daily"), "ANNOnePeriodAhead3")
-  //val mAECCoordinatorActor = context.actorOf( MAECCoordinatorActor.props(dataActor, dataReady), "MAEC")
 
   override def receive: Receive = {
     case _ =>

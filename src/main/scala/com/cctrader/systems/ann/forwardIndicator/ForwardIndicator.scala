@@ -37,6 +37,7 @@ class ForwardIndicator(settingsPath: String) {
   // inputs
   val stochasticK = new StochasticK(10)
   val stochasticD = new StochasticD(stochasticK, 3)
+  val roc = new RateOfChange(11)
 
   val indicatorsINPUT: List[InputIndicator] = List(
     new AccumulationDistribution,               // kan ikke normalizered nå
@@ -45,7 +46,7 @@ class ForwardIndicator(settingsPath: String) {
     new Momentum(5),                                      // kan ikke normalizered nå
     new MovingAverageExponentialConvergence(9, 26),       // kan ikke normalizered nå
     new PriceOscillator(9, 26),                           // kan ikke normalizered nå
-    new RateOfChange(10),                                 // kan ikke normalizered nå
+    roc,                                                  // kan ikke normalizered nå
     new RelativeStrengthIndex(15),
     stochasticK,
     stochasticD,
@@ -263,7 +264,7 @@ val indicatorsINPUT: List[Normalizable] = List(
    * @return the predicted output
    */
   private def idealOUTPUTRelativeStrengthIndex(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array(relativeStrengthIndex.getNormalized(index + pointsToLookAhed, marketDataSet))
+    Array(roc(index + pointsToLookAhed, marketDataSet))
   }
 
 }

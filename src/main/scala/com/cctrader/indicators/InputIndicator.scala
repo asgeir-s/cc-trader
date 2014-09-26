@@ -75,4 +75,14 @@ trait InputIndicator {
     }
   }
 
+  def deNormalize(value: Double) = {
+    if (normInSet && normOutSet) {
+      normMinOut - (value + normMinIn) / (normMaxOut + normMinOut) * (normMaxIn - normMinIn)
+    }
+    else {
+      println("ERROR: normOutRang or normInRang not set")
+      Double.NaN
+    }
+  }
+
 }

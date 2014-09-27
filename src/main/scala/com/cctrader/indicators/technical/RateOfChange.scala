@@ -8,6 +8,8 @@ import com.cctrader.indicators.InputIndicator
  * Does not need normalization
  */
 class RateOfChange(n: Int) extends InputIndicator{
+  println("n=" + n)
+
   /**
    * Calculating the indicator.
    *

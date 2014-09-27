@@ -105,13 +105,17 @@ trait TradingSystemActor extends Actor with ActorLogging {
       log.debug("Training done")
 
     case marketDataSetIn: MarketDataSet =>
+      log.info("Received new marketDataSet. the old was: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
+        + ", toDate" + marketDataSet.toDate)
       marketDataSet = marketDataSetIn
-      log.info("Received new marketDataSet (will replace ord): size:" + marketDataSetIn.size + ", fromDate" + marketDataSetIn.fromDate
+      log.info("NEW (will replace old): size:" + marketDataSetIn.size + ", fromDate" + marketDataSetIn.fromDate
         + ", toDate" + marketDataSetIn.toDate)
 
     case dataPoint: DataPoint =>
       log.debug("Received DataPoint: time:" + dataPoint.date + ", info:" + dataPoint)
       marketDataSet.addDataPoint(dataPoint)
+      log.info("Received new dataPoint. MarketDataSet is now: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
+        + ", toDate" + marketDataSet.toDate)
       //this does not work live. Only on test mode. To get the same effect on live trading
       // set a stop/limit order at [currentPrice*(1+stopPercentage)]
       checkStopPercentage

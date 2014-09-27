@@ -3,8 +3,9 @@ package com.cctrader.systems.ann.forwardIndicator
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
 import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
+import com.cctrader.indicators.InputIndicator
 import com.cctrader.indicators.machin.ANNOnePeriodAhead
-import com.cctrader.indicators.technical.{RateOfChange, RelativeStrengthIndex}
+import com.cctrader.indicators.technical._
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -16,9 +17,30 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
   val settingPath = settingPathIn
 } with TradingSystemActor {
 
+  val output = config.getString("output.indicator")
   var count = 0
-  val ann = new ForwardIndicator(settingPath)
-  var lastPredict:Double = 0
+  var indicator = {
+    if (output.equals("rateOfChange")) {
+      new RateOfChange(config.getInt("indicators.rateOfChange"))
+    }
+    else if (output.equals("williamsR")) {
+      new WilliamsR(config.getInt("indicators.williamsR"))
+    }
+    else if (output.equals("disparityIndex")) {
+      new DisparityIndex(config.getInt("indicators.disparityIndex"))
+    }
+    else if (output.equals("aroonOscillator")) {
+      new AroonOscillator(config.getInt("indicators.aroonOscillator"))
+    }
+    else {
+      log.error("ForwardIndicator not correctly specified.")
+      new RateOfChange(config.getInt("indicators.rateOfChange"))
+    }
+  }
+
+  val ann = new ForwardIndicator(settingPath, indicator)
+
+  val reversal = output.equals("williamsR")
 
 
   /**
@@ -32,54 +54,51 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
-  val rateOfChange = new RateOfChange(config.getInt("formula.ROCPeriods"))
-  var hasTrade = false
   /**
    * Evaluate new dataPoint.
    * Should be of the same granularity as the training set.
    * @return BUY, SELL or HOLD signal
    */
   override def newDataPoint() {
-    val roc = rateOfChange(marketDataSet.size-1, marketDataSet)
-    //val predict = ann(marketDataSet)
-    //println("roc:" + predict)
-    if ( roc > thresholdLong ) {
-      goLong
-      hasTrade = true
-    }
-    else if ( roc < thresholdShort ) {
-      goShort
-      hasTrade = true
-    }
-    if (hasTrade) {
-      if (( roc < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
-        goClose
-      }
-      else if (( roc > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
-        goClose
-      }
-    }
+    log.info("2Received new dataPoint. MarketDataSet is now: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
+      + ", toDate" + marketDataSet.toDate)
 
-    /*
-    val rsiToDay = relativeStrengthIndex(marketDataSet.size-1, marketDataSet)
-    val prediction = ann(marketDataSet)
-    println("Prediction: " + prediction)
-    println("RSI today: " + rsiToDay)
-
-    if (signalWriter.status == Signal.SHORT && rsiToDay > 50) {
-      goClose
-    }
-    else if (signalWriter.status == Signal.LONG && rsiToDay < 50) {
-      goClose
-    }
-
-    if (prediction > thresholdLong || rsiToDay > 70) { //0.4
+    val prediction = indicator(marketDataSet.size-1, marketDataSet)
+    //val prediction = ann(marketDataSet)
+    println("prediction:" + prediction)
+    if(reversal) {
+      if (prediction < thresholdLong && signalWriter.status.equals(Signal.CLOSE)) {
         goLong
-    }
-    else if (prediction < thresholdShort || rsiToDay <  30){ // 0.4
+      }
+      else if (prediction > thresholdShort && signalWriter.status.equals(Signal.CLOSE)) {
         goShort
+      }
+      else if (!signalWriter.status.equals(Signal.CLOSE)) {
+        if (prediction > thresholdCloseLong && signalWriter.status == Signal.LONG) {
+          goClose
+        }
+        else if (prediction < thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+          goClose
+        }
+      }
     }
-    */
+    else {
+      if (prediction > thresholdLong && signalWriter.status.equals(Signal.CLOSE)) {
+        goLong
+      }
+      else if (prediction < thresholdShort && signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (!signalWriter.status.equals(Signal.CLOSE)) {
+        if (prediction < thresholdCloseLong && signalWriter.status == Signal.LONG) {
+          goClose
+        }
+        else if (prediction > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+          goClose
+        }
+      }
+    }
+
   }
 }
 

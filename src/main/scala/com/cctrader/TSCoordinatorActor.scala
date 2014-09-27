@@ -89,7 +89,10 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
 
   def startTradingSystemActor: ActorRef = context.actorOf(tsProps, name + "-ts-" + countTradingSystemsUsed)
 
-  def newCopyOfMarketDataSet(setToCopy: MarketDataSet): MarketDataSet = MarketDataSet(setToCopy.list.clone().toList, setToCopy.settings.copy())
+  def newCopyOfMarketDataSet(setToCopy: MarketDataSet): MarketDataSet = {
+    MarketDataSet(setToCopy.getList.map(x => new DataPoint(x.id, x.sourceId, x.timestamp, x.open, x.close, x.low, x.high, x.volume)).toList, marketDataSettings)
+
+  }
 
   def startAndTrainNewSystem(marketDataSetForTraining: MarketDataSet) {
     countTradingSystemsUsed = countTradingSystemsUsed + 1
@@ -146,11 +149,6 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
       if (tradingSystemDate.after(newDataPoint.date)) {
         throw new Exception("The *new* dataPoint is older then the last. Last:" + tradingSystemDate + ", this:" + newDataPoint.date)
       }
-      messageDPCount = messageDPCount + 1
-      tradingSystemDate = newDataPoint.date
-      marketDataSet.addDataPoint(newDataPoint)
-      println(marketDataSet)
-
       // start using nextSystem and kill old
       if (nextSystemReady && (mode == Mode.LIVE || newDataPoint.date.after(transferToNextSystemDate))) {
         if (hasRunningTS) {
@@ -165,13 +163,19 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
         nextSystemReady = false
         hasRunningTS = true
       }
-      if (numberOfPredictionsPerTS > 0 && numberOfPointsProcessedByCurrentSystem == numberOfPredictionsPerTS) {
-        log.debug("Starts a new tradingSystem")
-        startAndTrainNewSystem(newCopyOfMarketDataSet(marketDataSet))
-      }
+
+      messageDPCount = messageDPCount + 1
+      marketDataSet.addDataPoint(newDataPoint)
+      tradingSystemDate = newDataPoint.date
+      println(marketDataSet)
+
       if (hasRunningTS) {
         numberOfPointsProcessedByCurrentSystem = numberOfPointsProcessedByCurrentSystem + 1
         tradingSystemActor ! newDataPoint
+      }
+      if (numberOfPredictionsPerTS > 0 && numberOfPointsProcessedByCurrentSystem == numberOfPredictionsPerTS) {
+        log.debug("Starts a new tradingSystem")
+        startAndTrainNewSystem(newCopyOfMarketDataSet(marketDataSet))
       }
 
     case Mode.LIVE =>

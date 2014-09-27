@@ -17,7 +17,7 @@ import org.encog.neural.networks.training.{Train, TrainingSetScore}
 /**
  *
  */
-class ForwardIndicator(settingsPath: String) {
+class ForwardIndicator(settingsPath: String, outPutIndicator: InputIndicator) {
   println("ForwardIndicator has started")
   var network = new BasicNetwork
 
@@ -35,62 +35,28 @@ class ForwardIndicator(settingsPath: String) {
   var initialtraining = true
 
   // inputs
-  val stochasticK = new StochasticK(10)
-  val stochasticD = new StochasticD(stochasticK, 3)
-  val roc = new RateOfChange(config.getInt("formula.ROCPeriods"))
+  val stochasticK = new StochasticK(config.getInt("indicators.stochasticK"))
+  val stochasticD = new StochasticD(stochasticK, config.getInt("indicators.stochasticD"))
+  //val roc =
 
   val indicatorsINPUT: List[InputIndicator] = List(
-    new AccumulationDistributionOscillator,                         // denne er strengt økende og ikke en ozilator
-    new AroonOscillator(25),
-    new DisparityIndex(10),                               // kan ikke normalizered nå
-    new Momentum(5),                                      // kan ikke normalizered nå
-    new MovingAverageExponentialConvergence(9, 26),       // kan ikke normalizered nå
-    new PriceOscillator(9, 26),                           // kan ikke normalizered nå
-    roc,                                                  // kan ikke normalizered nå
-    new RelativeStrengthIndex(15),
+    new AccumulationDistributionOscillator,
+    new AroonOscillator(config.getInt("indicators.aroonOscillator")),
+    new DisparityIndex(config.getInt("indicators.disparityIndex")),
+    new Momentum(config.getInt("indicators.momentum")),
+    new MovingAverageExponentialConvergence(config.getInt("indicators.movingAverageExponentialConvergenceFast"), config.getInt("indicators.movingAverageExponentialConvergenceSlow")),
+    new PriceOscillator(config.getInt("indicators.priceOscillatorFast"), config.getInt("indicators.priceOscillatorSlow")),
+    new RateOfChange(config.getInt("indicators.rateOfChange")),
+    new RelativeStrengthIndex(config.getInt("indicators.relativeStrengthIndex")),
     stochasticK,
     stochasticD,
-    new StochasticSlowD(stochasticD, 6),
-    new VolumeOscillator(9, 26),                          // kan ikke normalizered nå
-    new WilliamsR(25)//,
-    //new MovingAverageTransactionsPerBlockOscillator(9, 26)// kan ikke normalizered nå
+    new StochasticSlowD(stochasticD, config.getInt("indicators.stochasticSlowD")),
+    new VolumeOscillator(config.getInt("indicators.volumeOscillatorFast"), config.getInt("indicators.volumeOscillatorSlow")),
+    new WilliamsR(config.getInt("indicators.williamsR"))//,
   )
 
-  private final val pointsNeededToCompute: Int = numberOfInputPeriods * 26 + 1
- /*
-  // NORMALIZED INPUT
-val indicatorsINPUT: List[Normalizable] = List(
-  new AroonOscillator(25),
-  new RelativeStrengthIndex(15),
-  stochasticK,
-  stochasticD,
-  new StochasticSlowD(stochasticD, 5),
-  new WilliamsR(25)
-)
-*/
 
-  //outputHelper
-  val movingAveragePriceOut: MovingAveragePrice = new MovingAveragePrice(3) //10
-  val relativeStrengthIndex: RelativeStrengthIndex = new RelativeStrengthIndex(10)
-  relativeStrengthIndex.normOutRange(-1, 1) // TODO: should match activation function
-
-  /**
-   * Check that the number is a valide number between 1 and -1,
-   * if not sett it to 1 if number > 1 and
-   * -1 if number < -1.
-   * It not a number set to 0
-   *
-   * num the number
-   * @return a value between -1 and 1
-
-  def normal(num: Double): Double = {
-    if (num > 1) {1}
-    else if (num < -1) {-1}
-    else if (num > -1 && num < 1) {num}
-    else {0}
-  }
-  */
-
+  private final val pointsNeededToCompute: Int = numberOfInputPeriods * config.getInt("pointsNeededToCompute") + 1
 
   //Builds the network
   network.addLayer(new BasicLayer(new ActivationTANH, false, indicatorsINPUT.size * numberOfInputPeriods))
@@ -141,7 +107,7 @@ val indicatorsINPUT: List[Normalizable] = List(
 
     val mlDataSet: MLDataSet = {
       val input: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed)
-      val ideal: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed) //TODO: put in config
+      val ideal: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed)
 
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
         input(i - pointsNeededToCompute) = inputMaker(i, data)
@@ -229,6 +195,7 @@ val indicatorsINPUT: List[Normalizable] = List(
     Array((maxClose - marketDataSet(index).close) / marketDataSet(index).close)
   }
 
+  /*
   /**
    * Possible idealOUTPUT:
    * @param marketDataSet the marketDataSet to use for computing the ideal output
@@ -244,7 +211,9 @@ val indicatorsINPUT: List[Normalizable] = List(
     }
     Array((maxMovingAverage - marketDataSet.apply(index).close) / marketDataSet(index).close)
   }
+  */
 
+  /*
   /**
    * Possible idealOUTPUT:
    * @param marketDataSet the marketDataSet to use for computing the ideal output
@@ -254,6 +223,7 @@ val indicatorsINPUT: List[Normalizable] = List(
   private def idealOUTPUTMovingAverage(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
     Array((movingAveragePriceOut(index + pointsToLookAhed, marketDataSet) - marketDataSet(index).close) / marketDataSet(index).close)
   }
+*/
 
   /**
    * Possible idealOUTPUT:
@@ -262,7 +232,7 @@ val indicatorsINPUT: List[Normalizable] = List(
    * @return the predicted output
    */
   private def idealOUTPUTRelativeStrengthIndex(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array(roc(index + pointsToLookAhed, marketDataSet))
+    Array(outPutIndicator(index + pointsToLookAhed, marketDataSet))
   }
 
 }

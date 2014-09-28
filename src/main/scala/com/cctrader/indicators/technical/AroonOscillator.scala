@@ -24,8 +24,8 @@ class AroonOscillator(n: Int) extends InputIndicator {
 
     var indexOfHigh: Int = t-n+1
     var indexOfLow: Int = t-n+1
-    var high = data(t-n+1).high
-    var low = data(t-n+1).low
+    var high: Double = data(t-n+1).high
+    var low: Double = data(t-n+1).low
 
     for (i <- (t-n+2) to t) {
       if(data(i).high > high) {

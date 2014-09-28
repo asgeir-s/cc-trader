@@ -64,5 +64,21 @@ class InputIndicatorSpec extends UnitTest {
     assert(testIndicator.reScaled(0) == 0D)
   }
 
+  "scaling and reScaling" should "work" in {
+    val testIndicator = new AccumulationDistributionOscillator
+    testIndicator.normInRang(-40, 40)
+    testIndicator.normOutRange(-1, 1)
+    assert(testIndicator.reScaled(0)==0)
+    assert(testIndicator.reScaled(20)==0.5)
+    assert(testIndicator.reScaled(-20)==(-0.5))
+    assert(testIndicator.deScaled(0) == 0)
+    assert(testIndicator.deScaled(0.5) == 20)
+    assert(testIndicator.deScaled(-0.5) == -20)
+
+
+
+
+  }
+
 
 }

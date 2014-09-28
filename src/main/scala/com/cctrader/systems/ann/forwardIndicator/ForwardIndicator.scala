@@ -17,7 +17,7 @@ import org.encog.neural.networks.training.{Train, TrainingSetScore}
 /**
  *
  */
-class ForwardIndicator(settingsPath: String, outPutIndicator: InputIndicator) {
+class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) {
   println("ForwardIndicator has started")
   var network = new BasicNetwork
 
@@ -54,6 +54,8 @@ class ForwardIndicator(settingsPath: String, outPutIndicator: InputIndicator) {
     new VolumeOscillator(config.getInt("indicators.volumeOscillatorFast"), config.getInt("indicators.volumeOscillatorSlow")),
     new WilliamsR(config.getInt("indicators.williamsR"))//,
   )
+
+  val outPutIndicator = indicatorsINPUT.filter(_.getClass.equals(outPutIndicatorIn.getClass))(0)
 
 
   private final val pointsNeededToCompute: Int = numberOfInputPeriods * config.getInt("pointsNeededToCompute") + 1
@@ -106,17 +108,19 @@ class ForwardIndicator(settingsPath: String, outPutIndicator: InputIndicator) {
     }
 
     val mlDataSet: MLDataSet = {
+      println("data.size:" + data.size + ", pointsNeededToCompute:" + pointsNeededToCompute + ", pointsToLookAhed:" + pointsToLookAhed)
       val input: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed)
       val ideal: Array[Array[Double]] = new Array[Array[Double]](data.size - pointsNeededToCompute - pointsToLookAhed)
 
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
         input(i - pointsNeededToCompute) = inputMaker(i, data)
-        ideal(i - pointsNeededToCompute) = idealOUTPUTRelativeStrengthIndex(data, i)
+        ideal(i - pointsNeededToCompute) = idealOutput(data, i)
         if(i%100 == 0) {
           println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size + "):")
           println(input(i - pointsNeededToCompute).toVector)
           println("Output #" + i + ":")
           println(ideal(i - pointsNeededToCompute).toVector)
+          println("descaled:" + outPutIndicator.deScaled(ideal(i - pointsNeededToCompute)(0)))
         }
       }
       new BasicMLDataSet(input, ideal)
@@ -175,7 +179,11 @@ class ForwardIndicator(settingsPath: String, outPutIndicator: InputIndicator) {
   def apply(data: MarketDataSet): Double = {
     val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size-1, data)))
     val predict: Double = predictData.getData(0)
-    predict
+    outPutIndicator.deScaled(predict)
+  }
+
+  def directIndicator(data: MarketDataSet) = {
+    outPutIndicator(data.size-1, data)
   }
 
 
@@ -231,8 +239,8 @@ class ForwardIndicator(settingsPath: String, outPutIndicator: InputIndicator) {
    * @param index the index of the point that should predict the output
    * @return the predicted output
    */
-  private def idealOUTPUTRelativeStrengthIndex(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array(outPutIndicator(index + pointsToLookAhed, marketDataSet))
+  private def idealOutput(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
+    Array(outPutIndicator.getReScaled(index + pointsToLookAhed, marketDataSet))
   }
 
 }

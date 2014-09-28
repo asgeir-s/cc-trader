@@ -63,37 +63,64 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     log.info("2Received new dataPoint. MarketDataSet is now: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
       + ", toDate" + marketDataSet.toDate)
 
-    val prediction = indicator(marketDataSet.size-1, marketDataSet)
+    //val prediction = indicator(marketDataSet.size-1, marketDataSet)
+    val directIndicator = ann.directIndicator(marketDataSet)
     //val prediction = ann(marketDataSet)
-    println("prediction:" + prediction)
+    println("NEW DATAPOINT:")
+    println("directIndicator:" + directIndicator)
+    //println("prediction:" + prediction)
     if(reversal) {
-      if (prediction < thresholdLong && signalWriter.status.equals(Signal.CLOSE)) {
-        goLong
+      if (directIndicator < thresholdLong) {
+        if(signalWriter.status.equals(Signal.CLOSE)){
+          goLong
+        }
+        else if (signalWriter.status == Signal.SHORT){
+          goClose
+          goLong
+        }
       }
-      else if (prediction > thresholdShort && signalWriter.status.equals(Signal.CLOSE)) {
-        goShort
+      else if (directIndicator > thresholdShort) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
+          goShort
+        }
+        else if (signalWriter.status == Signal.LONG) {
+          goClose
+          goShort
+        }
       }
       else if (!signalWriter.status.equals(Signal.CLOSE)) {
-        if (prediction > thresholdCloseLong && signalWriter.status == Signal.LONG) {
+        if ((directIndicator > thresholdCloseLong ) && signalWriter.status == Signal.LONG) {
           goClose
         }
-        else if (prediction < thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+        else if ((directIndicator < thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
           goClose
         }
       }
     }
     else {
-      if (prediction > thresholdLong && signalWriter.status.equals(Signal.CLOSE)) {
-        goLong
+      if (directIndicator > thresholdLong) {
+        if(signalWriter.status.equals(Signal.CLOSE)){
+          goLong
+        }
+        else if (signalWriter.status == Signal.SHORT){
+          goClose
+          goLong
+        }
       }
-      else if (prediction < thresholdShort && signalWriter.status.equals(Signal.CLOSE)) {
-        goShort
+      else if ( directIndicator < thresholdShort) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
+          goShort
+        }
+        else if (signalWriter.status == Signal.LONG) {
+          goClose
+          goShort
+        }
       }
       else if (!signalWriter.status.equals(Signal.CLOSE)) {
-        if (prediction < thresholdCloseLong && signalWriter.status == Signal.LONG) {
+        if ((directIndicator < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
           goClose
         }
-        else if (prediction > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+        else if ((directIndicator > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
           goClose
         }
       }

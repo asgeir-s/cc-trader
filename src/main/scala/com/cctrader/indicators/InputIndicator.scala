@@ -24,6 +24,11 @@ trait InputIndicator {
    */
   def apply(t: Int, data: MarketDataSet): Double
 
+  def name: String = {
+    val fullName = this.getClass.getName
+    fullName.substring(fullName.lastIndexOf('.')+1, fullName.length)
+  }
+
   def setNormalizationBounds(data: MarketDataSet, pointsNeededToCompute: Int) {
     var min = Double.MaxValue
     var max = Double.MinValue
@@ -36,7 +41,7 @@ trait InputIndicator {
         max = value
       }
     }
-    println("Should be Oscillator: minValue:" + min + ", maxValue:" + max + "")
+    println(name + ": Should be Oscillator: minValue:" + min + ", maxValue:" + max + "")
     if(Math.abs(min) > Math.abs(max)) {
       normInRang(-Math.abs(min), Math.abs(min))
     }
@@ -50,10 +55,10 @@ trait InputIndicator {
       normMinIn = min
       normMaxIn = max
       normInSet = true
-      println("Normalization range set to:[" + normMinIn + ", " + normMaxIn + "]")
+      println(name + ": Normalization range set to:[" + normMinIn + ", " + normMaxIn + "]")
     }
     else {
-      println("ERROR: normInRang already set to: minValue:" + normMinIn + ", maxValue:" + normMaxIn)
+      println(name + ": ERROR: normInRang already set to: minValue:" + normMinIn + ", maxValue:" + normMaxIn)
     }
 
   }
@@ -65,7 +70,7 @@ trait InputIndicator {
       normOutSet = true
     }
     else {
-      println("ERROR: normOutRang already set")
+      println(name + ": ERROR: normOutRang already set")
     }
   }
 
@@ -78,7 +83,17 @@ trait InputIndicator {
       (value - normMinIn) * (normMaxOut - normMinOut) / (normMaxIn - normMinIn) + normMinOut
     }
     else {
-      println("ERROR: normOutRang or normInRang not set")
+      println(name + ": ERROR: normOutRang or normInRang not set")
+      Double.NaN
+    }
+  }
+
+  def deScaled(value: Double) = {
+    if (normInSet && normOutSet) {
+      (value - normMinOut) * (normMaxIn - normMinIn) / (normMaxOut - normMinOut) + normMinIn
+    }
+    else {
+      println(name + ": ERROR: normOutRang or normInRang not set")
       Double.NaN
     }
   }

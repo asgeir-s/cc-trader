@@ -50,7 +50,7 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
     pgConnection.addNotificationListener(new PGNotificationListener() {
       @Override
       override def notification(processId: Int, instrument: String, newId: String) {
-        println("newId:" + newId)
+        println("Live data for " + sendTo + " newId:" + newId)
         val numId = {
           if (newId.contains("Some")) {
             newId.substring(newId.lastIndexOf('(') + 1, newId.lastIndexOf(')')).toLong

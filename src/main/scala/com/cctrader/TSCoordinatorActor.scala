@@ -42,11 +42,14 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   var nextSystemReady: Boolean = false
   val name = config.getString("name")
   val numberOfPredictionsPerTS = config.getInt("numberOfPredictionsBeforeNewTSActor")
+  val instrument = appConfig.getString("instrumentTable")
+  val granularity = tsSettingPath.substring(tsSettingPath.lastIndexOf('_'), tsSettingPath.lastIndexOf('.'))
+  val tableName = instrument + granularity
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemDate,
     numberOfHistoricalPoints = config.getInt("initialtrainingSetSize"), //40
-    instrument = appConfig.getString("instrumentTable")
+    tableName
   )
 
   val databaseFactory = Database.forURL(

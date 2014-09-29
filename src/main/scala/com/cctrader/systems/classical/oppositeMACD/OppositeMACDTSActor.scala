@@ -35,18 +35,28 @@ class OppositeMACDTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signal
    val macd = maec(marketDataSet.size-1, marketDataSet)
     println("macd:" + macd)
     if (macd < thresholdLong) {
-      goLong
-      hasTrade = true
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT){
+        goClose
+        goLong
+      }
     }
     else if (macd > thresholdShort) {
-      goShort
-      hasTrade = true
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (hasTrade) {
-      if (macd > thresholdCloseLong && signalWriter.status == Signal.LONG) {
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((macd > thresholdCloseLong ) && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (macd < thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if ((macd < thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

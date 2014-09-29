@@ -35,18 +35,32 @@ class OppositeStochasticTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: 
     val stochasticKValue = stochasticK(marketDataSet.size-1, marketDataSet)
     val stochasticDValue = stochasticD(marketDataSet.size-1, marketDataSet)
     val diff = stochasticKValue - stochasticDValue
-
-    if (signalWriter.status == Signal.SHORT && diff < thresholdCloseShort) {
-      goClose
+    println("Stochastic diff:" + diff)
+    if (diff < thresholdLong) {
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT){
+        goClose
+        goLong
+      }
     }
-    else if (signalWriter.status == Signal.LONG && diff > thresholdCloseLong) {
-      goClose
+    else if (diff > thresholdShort) {
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (diff < thresholdLong) { //0.4
-      goLong
-    }
-    else if (diff > thresholdShort){ // 0.4
-      goShort
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((diff > thresholdCloseLong ) && signalWriter.status == Signal.LONG) {
+        goClose
+      }
+      else if ((diff < thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
+        goClose
+      }
     }
   }
 }

@@ -31,18 +31,28 @@ class OppositeDisparityTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     val disparity = indicator(marketDataSet.size - 1, marketDataSet)
     println("disparity:" + disparity)
     if (disparity < thresholdLong) {
-      goLong
-      hasTrade = true
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT){
+        goClose
+        goLong
+      }
     }
     else if (disparity > thresholdShort) {
-      goShort
-      hasTrade = true
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (hasTrade) {
-      if (disparity > thresholdCloseLong && signalWriter.status == Signal.LONG) {
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((disparity > thresholdCloseLong ) && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (disparity < thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if ((disparity < thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

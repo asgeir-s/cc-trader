@@ -32,22 +32,36 @@ class StochasticTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler
    * From this function call goLooong, goShort or goClose to write signals to the signal database.
    */
   override def newDataPoint(): Unit = {
-    val stochasticKValue = stochasticK(marketDataSet.size-1, marketDataSet)
-    val stochasticDValue = stochasticD(marketDataSet.size-1, marketDataSet)
+    val stochasticKValue = stochasticK(marketDataSet.size - 1, marketDataSet)
+    val stochasticDValue = stochasticD(marketDataSet.size - 1, marketDataSet)
     val diff = stochasticKValue - stochasticDValue
-    println("diff:" + diff)
+    println("Stochastic diff:" + diff)
 
-    if (signalWriter.status == Signal.SHORT && diff > thresholdCloseShort) {
-      goClose
+    if (diff > thresholdLong) {
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT) {
+        goClose
+        goLong
+      }
     }
-    else if (signalWriter.status == Signal.LONG && diff < thresholdCloseLong) {
-      goClose
+    else if (diff < thresholdShort) {
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (diff > thresholdLong) { //0.4
-      goLong
-    }
-    else if (diff < thresholdShort){ // 0.4
-      goShort
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((diff < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
+        goClose
+      }
+      else if ((diff > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
+        goClose
+      }
     }
   }
 }

@@ -31,22 +31,31 @@ class OppositeWilliamRTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Si
     val will = williamR(marketDataSet.size - 1, marketDataSet)
     println("will:" + will)
     if (will > thresholdLong) {
-      goLong
-      hasTrade = true
-    }
-    else if (will < thresholdShort) {
-      goShort
-      hasTrade = true
-    }
-    if (hasTrade) {
-      if (will < thresholdCloseLong && signalWriter.status == Signal.LONG) {
-        goClose
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
       }
-      else if (will > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if (signalWriter.status == Signal.SHORT){
         goClose
+        goLong
       }
     }
-
+    else if ( will < thresholdShort) {
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
+    }
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((will < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
+        goClose
+      }
+      else if ((will > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
+        goClose
+      }
+    }
   }
 }
 

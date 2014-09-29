@@ -31,18 +31,28 @@ class AroonTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, set
     val aroon = indicator(marketDataSet.size - 1, marketDataSet)
     println("aroon:" + aroon)
     if (aroon > thresholdLong) {
-      goLong
-      hasTrade = true
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT){
+        goClose
+        goLong
+      }
     }
-    else if (aroon < thresholdShort) {
-      goShort
-      hasTrade = true
+    else if ( aroon < thresholdShort) {
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (hasTrade) {
-      if (aroon < thresholdCloseLong && signalWriter.status == Signal.LONG) {
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((aroon < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (aroon > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if ((aroon > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

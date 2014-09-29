@@ -50,9 +50,18 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
     pgConnection.addNotificationListener(new PGNotificationListener() {
       @Override
       override def notification(processId: Int, instrument: String, newId: String) {
-        println("New entry in the db. instrument:" + instrument + ", newId:" + newId)
+        println("newId:" + newId)
+        val numId = {
+          if (newId.contains("Some")) {
+            newId.substring(newId.lastIndexOf('(') + 1, newId.lastIndexOf(')')).toLong
+          }
+          else {
+            newId.toLong
+          }
+        }
+        println("New entry in the db. instrument:" + instrument + ", newId:" + numId)
         // newId is database id. USe it to retrieve the new row
-        val newDataPoint: DataPoint = table.filter(_.id === newId.toLong).list.last
+        val newDataPoint: DataPoint = table.filter(_.id === numId).list.last
         sendTo ! newDataPoint
       }
     })
@@ -68,10 +77,13 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
       log.debug("Received: RequestNext " + numOfPoints + " dataPoints.")
       val idOfLastDataPoint = table.list.last.id.get
       val dataPointsToReturn = table.filter(x => x.id > idLastSentDP && x.id <= (idLastSentDP + numOfPoints)).list
+      println("size of DP to return:" + dataPointsToReturn.size)
       dataPointsToReturn.foreach(x => {
         sender ! x
         idLastSentDP = x.id.get
         println("sending:" + x)
+        println("last id:" + idOfLastDataPoint)
+        println("this id: " + x.id.get)
         if (x.id.get == idOfLastDataPoint) {
           live = true
         }
@@ -80,7 +92,7 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
         println("Goes live: instrument: " + marketDataSettings.instrument)
         liveData(sender)
       }
-      log.debug("Finished processing: RequestLiveBTData, return size:" + dataPointsToReturn.size)
+      log.debug("Finished processing: RequestBTData, return size:" + dataPointsToReturn.size)
 
   }
 }

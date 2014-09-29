@@ -57,18 +57,18 @@ class MasterActor extends Actor with ActorLogging {
   //context.actorOf(OppositeAroonCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeAroon/OppositeAroon" + granularity +".conf"))
   //context.actorOf(OppositeStochasticCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeStochastic/OppositeStochastic" + granularity +".conf"))
 
-
+// KUN EN GRANULARITY OM GANGEN, FOR ELLERS VIRKER IKKE NOTIFICATIONS
   //2hour - TOP SYSTEMS
-  context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_2hour.conf"))
-  context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_2hour.conf"))
+  //context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_2hour.conf"))
+  //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_2hour.conf"))
 
 
   //6hour - TOP SYSTEMS
-  context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC_6hour.conf"))
-  context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR_6hour.conf"))
-  context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity_6hour.conf"))
-  context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_6hour.conf"))
-  context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD_6hour.conf"))
+  //context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC_6hour.conf"))
+  //context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR_6hour.conf"))
+  //context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity_6hour.conf"))
+  //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_6hour.conf"))
+  //context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD_6hour.conf"))
 
 
   //12hour - TOP SYSTEMS
@@ -78,6 +78,7 @@ class MasterActor extends Actor with ActorLogging {
   context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_12hour.conf"))
   context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_12hour.conf"))
   context.actorOf(OppositeMACDCoordinatorActor.props(dataActor, "tsSettings/classical/oppositeMACD/OppositeMACD_12hour.conf"))
+
 
   override def receive: Receive = {
     case _ =>

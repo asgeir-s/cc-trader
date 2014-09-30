@@ -2,6 +2,8 @@ import AssemblyKeys._ // put this at the top of the file
 
 assemblySettings
 
+test in assembly := {}
+
 // your assembly settings here
 
 organization  := "com.cctrader"

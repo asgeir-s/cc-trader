@@ -19,7 +19,7 @@ class MACDTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, sett
 } with TradingSystemActor {
 
   var hasTrade = false
-  val maec = new MovingAverageExponentialConvergence(config.getInt("formula.slowPeriods"), config.getInt("formula.fastPeriods"))
+  val maec = new MovingAverageExponentialConvergence(config.getInt("formula.fastPeriods"), config.getInt("formula.slowPeriods"))
 
   /**
    * Train the system.

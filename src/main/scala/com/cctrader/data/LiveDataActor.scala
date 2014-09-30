@@ -75,8 +75,8 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
   override def receive: Receive = {
     case RequestNext(numOfPoints) =>
       log.debug("Received: RequestNext " + numOfPoints + " dataPoints.")
-      val idOfLastDataPoint = table.list.last.id.get
-      val dataPointsToReturn = table.filter(x => x.id > idLastSentDP && x.id <= (idLastSentDP + numOfPoints)).list
+      val idOfLastDataPoint = table.sortBy(_.id).list.last.id.get
+      val dataPointsToReturn = table.sortBy(_.id).filter(x => x.id > idLastSentDP && x.id <= (idLastSentDP + numOfPoints)).list
       println("size of DP to return:" + dataPointsToReturn.size)
       dataPointsToReturn.foreach(x => {
         sender ! x

@@ -31,18 +31,28 @@ class RSITSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, setti
     val rsi = relativeStrengthIndex(marketDataSet.size - 1, marketDataSet)
     println("rsi:" + rsi)
     if (rsi < thresholdLong) {
-      goLong
-      hasTrade = true
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT){
+        goClose
+        goLong
+      }
     }
     else if (rsi > thresholdShort) {
-      goShort
-      hasTrade = true
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (hasTrade) {
-      if (rsi > thresholdCloseLong && signalWriter.status == Signal.LONG) {
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((rsi > thresholdCloseLong ) && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (rsi < thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if ((rsi < thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

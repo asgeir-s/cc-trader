@@ -31,18 +31,28 @@ class ROCTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, setti
     val roc = rateOfChange(marketDataSet.size - 1, marketDataSet)
     println("roc:" + roc)
     if (roc > thresholdLong) {
-      goLong
-      hasTrade = true
+      if(signalWriter.status.equals(Signal.CLOSE)){
+        goLong
+      }
+      else if (signalWriter.status == Signal.SHORT){
+        goClose
+        goLong
+      }
     }
-    else if (roc < thresholdShort) {
-      goShort
-      hasTrade = true
+    else if ( roc < thresholdShort) {
+      if (signalWriter.status.equals(Signal.CLOSE)) {
+        goShort
+      }
+      else if (signalWriter.status == Signal.LONG) {
+        goClose
+        goShort
+      }
     }
-    if (hasTrade) {
-      if (roc < thresholdCloseLong && signalWriter.status == Signal.LONG) {
+    else if (!signalWriter.status.equals(Signal.CLOSE)) {
+      if ((roc < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
         goClose
       }
-      else if (roc > thresholdCloseShort && signalWriter.status == Signal.SHORT) {
+      else if ((roc > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
         goClose
       }
     }

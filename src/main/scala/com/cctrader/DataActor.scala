@@ -30,13 +30,15 @@ class DataActor extends Actor with ActorLogging {
     val table = TableQuery[InstrumentTable]((tag:Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
 
     val startTime: Date = {
-      val firstRow = table.first.copy()
-      firstRow.date
+      val idOfMin = table.map(_.id).min
+      val firstOption = table.filter(_.id === idOfMin).firstOption
+      firstOption.get.date
     }
 
-    val endTime: Date = {
-      val lastRow = table.list.last.copy()
-      lastRow.date
+    val endTime = {
+      val idOfMax = table.map(_.id).max
+      val firstOption = table.filter(_.id === idOfMax).firstOption
+      firstOption.get.date
     }
 
     log.info("For instrument " + marketDataSettings.instrument + ": startTime:" + startTime + ", endTime:" + endTime)
@@ -45,7 +47,7 @@ class DataActor extends Actor with ActorLogging {
       log.error("Market data startTime is before startTime in the database. StartTime is: " + marketDataSettings.startDate + " and start time in DB is: " + startTime)
     }
     MarketDataSet(
-      table.filter(_.timestamp <= (marketDataSettings.startDate.getTime/1000).toInt).list.sortBy(_.id).reverse.take(marketDataSettings.numberOfHistoricalPoints).toList.reverse,
+      table.filter(_.timestamp <= (marketDataSettings.startDate.getTime/1000).toInt).sortBy(_.id).list.reverse.take(marketDataSettings.numberOfHistoricalPoints).toList.reverse,
       marketDataSettings
     )
 

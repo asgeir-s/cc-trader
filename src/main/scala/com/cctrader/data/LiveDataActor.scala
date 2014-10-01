@@ -11,20 +11,19 @@ import com.impossibl.postgres.jdbc.PGDataSource
 import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._
-import scala.slick.jdbc.{StaticQuery => Q}
+import scala.slick.jdbc.{StaticQuery => Q, ResultSetConcurrency, JdbcBackend}
 
 
 /**
  *
  */
-class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, idStartPoint: Long) extends Actor with ActorLogging {
+class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long) extends Actor with ActorLogging {
 
-  implicit val session: Session = sessionIn
+  implicit var session: Session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
   var live = false
   var lastPointID: Int = 0
   var idLastSentDP = idStartPoint
   val table = TableQuery[InstrumentTable]((tag:Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
-
 
   def getDataSource: PGDataSource = {
     val config = ConfigFactory.load()
@@ -50,6 +49,8 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
     pgConnection.addNotificationListener(new PGNotificationListener() {
       @Override
       override def notification(processId: Int, instrument: String, newId: String) {
+        session.close()
+        session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
         println("Live data for " + sendTo + " newId:" + newId)
         val numId = {
           if (newId.contains("Some")) {
@@ -70,6 +71,11 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
     statement.addBatch("LISTEN " + marketDataSettings.instrument)
     statement.executeBatch()
     statement.close()
+  }
+
+  override def postStop() {
+    // clean up some resources ...
+    session.close()
   }
 
   override def receive: Receive = {
@@ -96,6 +102,6 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
 }
 
 object LiveDataActor {
-  def props(sessionIn: Session, marketDataSettings: MarketDataSettings, idStartPoint: Long): Props =
-    Props(new LiveDataActor(sessionIn, marketDataSettings, idStartPoint))
+  def props(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long): Props =
+    Props(new LiveDataActor(databaseFactory, marketDataSettings, idStartPoint))
 }

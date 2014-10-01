@@ -75,15 +75,13 @@ class LiveDataActor(sessionIn: Session, marketDataSettings: MarketDataSettings, 
   override def receive: Receive = {
     case RequestNext(numOfPoints) =>
       log.debug("Received: RequestNext " + numOfPoints + " dataPoints.")
-      val idOfLastDataPoint = table.map(_.id).max
+      val idOfLastDataPoint = table.sortBy(_.id.asc.reverse).take(1).list.last.id.get
       val dataPointsToReturn = table.sortBy(_.id).filter(x => x.id > idLastSentDP && x.id <= (idLastSentDP + numOfPoints)).list
       println("size of DP to return:" + dataPointsToReturn.size)
       dataPointsToReturn.foreach(x => {
         sender ! x
         idLastSentDP = x.id.get
         println("sending:" + x)
-        println("last id:" + idOfLastDataPoint)
-        println("this id: " + x.id.get)
         if (x.id.get == idOfLastDataPoint) {
           live = true
         }

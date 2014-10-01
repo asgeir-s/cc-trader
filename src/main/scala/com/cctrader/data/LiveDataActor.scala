@@ -19,7 +19,7 @@ import scala.slick.jdbc.{StaticQuery => Q, ResultSetConcurrency, JdbcBackend}
  */
 class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long) extends Actor with ActorLogging {
 
-  implicit var session: Session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
+  implicit val session: Session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
   var live = false
   var lastPointID: Int = 0
   var idLastSentDP = idStartPoint
@@ -33,6 +33,7 @@ class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings
     basicDataSource.setDatabase(config.getString("postgres.dbname"))
     basicDataSource.setUser(config.getString("postgres.user"))
     basicDataSource.setPassword(config.getString("postgres.password"))
+    basicDataSource.setHousekeeper(false)
 
     basicDataSource
   }
@@ -49,8 +50,6 @@ class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings
     pgConnection.addNotificationListener(new PGNotificationListener() {
       @Override
       override def notification(processId: Int, instrument: String, newId: String) {
-        session.close()
-        session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
         println("Live data for " + sendTo + " newId:" + newId)
         val numId = {
           if (newId.contains("Some")) {

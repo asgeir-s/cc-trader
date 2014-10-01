@@ -45,6 +45,7 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
   val instrument = appConfig.getString("instrumentTable")
   val granularity = tsSettingPath.substring(tsSettingPath.lastIndexOf('_'), tsSettingPath.lastIndexOf('.'))
   val tableName = instrument + granularity
+  var lastDPsID = -1
 
   val marketDataSettings = MarketDataSettings(
     startDate = tradingSystemDate,
@@ -148,10 +149,11 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
       nextSystemReady = true
 
     case newDataPoint: DataPoint =>
-      log.debug("Received: newDataPoint")
-      if (tradingSystemDate.after(newDataPoint.date)) {
+      log.debug("Received: newDataPoint id:" + newDataPoint.id.get.toInt)
+      if (tradingSystemDate.after(newDataPoint.date) || newDataPoint.id.get.toInt == lastDPsID) {
         throw new Exception("The *new* dataPoint is older then the last. Last:" + tradingSystemDate + ", this:" + newDataPoint.date)
       }
+      lastDPsID = newDataPoint.id.get.toInt
       // start using nextSystem and kill old
       if (nextSystemReady && (mode == Mode.LIVE || newDataPoint.date.after(transferToNextSystemDate))) {
         if (hasRunningTS) {

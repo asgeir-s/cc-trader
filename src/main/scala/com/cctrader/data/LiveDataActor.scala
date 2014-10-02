@@ -20,7 +20,7 @@ class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings
 
   implicit val session: Session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
   var live = false
-  var idLastSentDP = idStartPoint
+  var idLastSentDP: Long = idStartPoint
   val table = TableQuery[InstrumentTable]((tag: Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
 
   def liveData(sendTo: ActorRef) {

@@ -2,10 +2,9 @@ package com.cctrader.systems.ann.forwardIndicator
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
-import com.cctrader.indicators.fundamental.MovingAverageTransactionsPerBlockOscillator
 import com.cctrader.indicators.technical._
 import com.typesafe.config.ConfigFactory
-import org.encog.engine.network.activation.{ActivationSigmoid, ActivationTANH}
+import org.encog.engine.network.activation.ActivationTANH
 import org.encog.ml.data.basic.{BasicMLData, BasicMLDataSet}
 import org.encog.ml.data.{MLData, MLDataSet}
 import org.encog.neural.networks.BasicNetwork

@@ -2,7 +2,6 @@ package com.cctrader.systems.ann.forwardIndicator
 
 import akka.actor.{ActorRef, Props}
 import com.cctrader.TSCoordinatorActor
-import com.cctrader.data._
 
 /**
  *

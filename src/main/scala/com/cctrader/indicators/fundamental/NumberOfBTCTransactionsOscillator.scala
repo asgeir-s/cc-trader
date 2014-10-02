@@ -2,7 +2,6 @@ package com.cctrader.indicators.fundamental
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
-import com.cctrader.indicators.technical.MovingAverageVolume
 
 /**
  *

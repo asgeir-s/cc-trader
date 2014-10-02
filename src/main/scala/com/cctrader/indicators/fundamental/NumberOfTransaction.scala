@@ -1,8 +1,7 @@
 package com.cctrader.indicators.fundamental
 
 import com.cctrader.data.MarketDataSet
-import com.cctrader.data.MarketDataSet
-import com.cctrader.indicators.{HelperIndicators, InputIndicator}
+import com.cctrader.indicators.HelperIndicators
 
 import scala.io.Source
 
@@ -14,7 +13,7 @@ class NumberOfTransaction extends HelperIndicators {
   //load cvs to List
   val src = Source.fromFile("download/coindesk-xbtdailytransactions.csv")
   val iter = src.getLines().map(_.split(","))
-  final val list: List[(String, Double)] = iter.map(x => (x(0).asInstanceOf[String], x(1).toDouble)).toList
+  final val list: List[(String, Double)] = iter.map(x => (x(0), x(1).toDouble)).toList
 
   /**
    * Calculating the indicator.

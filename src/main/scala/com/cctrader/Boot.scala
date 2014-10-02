@@ -7,6 +7,6 @@ import akka.actor.{ActorSystem, Props}
  */
 
 object Boot extends App {
-  implicit val system = ActorSystem("actor-system")
+  implicit val system = ActorSystem("actor-system-cctrader")
   system.actorOf(Props[MasterActor], "master")
 }

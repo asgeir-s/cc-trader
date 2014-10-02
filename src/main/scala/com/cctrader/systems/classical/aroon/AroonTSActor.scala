@@ -2,8 +2,8 @@ package com.cctrader.systems.classical.aroon
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{Signal, MarketDataSet, Signaler}
-import com.cctrader.indicators.technical.{AroonOscillator, DisparityIndex}
+import com.cctrader.data.{MarketDataSet, Signal, Signaler}
+import com.cctrader.indicators.technical.AroonOscillator
 
 /**
  *

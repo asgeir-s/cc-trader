@@ -9,7 +9,6 @@ import com.cctrader.data._
 import com.cctrader.dbtables.{TSInfo, TSTable}
 import com.typesafe.config.ConfigFactory
 
-import scala.collection.immutable.Queue
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.slick.driver.PostgresDriver.simple._

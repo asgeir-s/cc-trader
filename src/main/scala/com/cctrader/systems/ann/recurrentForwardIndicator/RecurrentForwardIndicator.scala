@@ -2,18 +2,16 @@ package com.cctrader.systems.ann.recurrentForwardIndicator
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
-import com.cctrader.indicators.fundamental.MovingAverageTransactionsPerBlockOscillator
 import com.cctrader.indicators.technical._
 import com.typesafe.config.ConfigFactory
-import org.encog.engine.network.activation.{ActivationSigmoid, ActivationTANH}
+import org.encog.engine.network.activation.ActivationSigmoid
 import org.encog.ml.data.basic.{BasicMLData, BasicMLDataSet}
 import org.encog.ml.data.{MLData, MLDataSet}
 import org.encog.neural.networks.BasicNetwork
-import org.encog.neural.networks.layers.BasicLayer
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing
 import org.encog.neural.networks.training.propagation.back.Backpropagation
 import org.encog.neural.networks.training.{Train, TrainingSetScore}
-import org.encog.neural.pattern.{JordanPattern, ElmanPattern}
+import org.encog.neural.pattern.JordanPattern
 
 /**
  *

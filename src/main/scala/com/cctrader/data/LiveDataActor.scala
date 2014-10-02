@@ -1,75 +1,30 @@
 package com.cctrader.data
 
 
-import java.sql.Statement
-
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor._
 import com.cctrader.dbtables._
 import com.cctrader.{MarketDataSettings, RequestNext}
-import com.impossibl.postgres.api.jdbc.{PGConnection, PGNotificationListener}
-import com.impossibl.postgres.jdbc.PGDataSource
-import com.typesafe.config.ConfigFactory
 
+import scala.concurrent.duration._
 import scala.slick.driver.PostgresDriver.simple._
-import scala.slick.jdbc.{StaticQuery => Q, ResultSetConcurrency, JdbcBackend}
+import scala.slick.jdbc.{JdbcBackend, ResultSetConcurrency, StaticQuery => Q}
 
 
 /**
  *
  */
-class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long) extends Actor with ActorLogging {
+class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long, coordinator: ActorRef) extends Actor with ActorLogging {
+
+  implicit val system = ActorSystem("actor-system-cctrader")
+  import system.dispatcher
 
   implicit val session: Session = databaseFactory.createSession().forParameters(rsConcurrency = ResultSetConcurrency.ReadOnly)
   var live = false
-  var lastPointID: Int = 0
   var idLastSentDP = idStartPoint
-  val table = TableQuery[InstrumentTable]((tag:Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
-
-  def getDataSource: PGDataSource = {
-    val config = ConfigFactory.load()
-
-    val basicDataSource = new PGDataSource()
-    basicDataSource.setPort(config.getString("postgres.port").toInt)
-    basicDataSource.setDatabase(config.getString("postgres.dbname"))
-    basicDataSource.setUser(config.getString("postgres.user"))
-    basicDataSource.setPassword(config.getString("postgres.password"))
-    basicDataSource.setHousekeeper(false)
-
-    basicDataSource
-  }
+  val table = TableQuery[InstrumentTable]((tag: Tag) => new InstrumentTable(tag, marketDataSettings.instrument))
 
   def liveData(sendTo: ActorRef) {
-    sendTo ! Mode.LIVE
-    log.info("WE GO LIVE!")
-
-    //listen for new dataPoints
-    // send new dataPoints to sendTo
-    val dataSource: PGDataSource = getDataSource
-    val pgConnection: PGConnection = dataSource.getConnection.asInstanceOf[PGConnection]
-
-    pgConnection.addNotificationListener(new PGNotificationListener() {
-      @Override
-      override def notification(processId: Int, instrument: String, newId: String) {
-        println("Live data for " + sendTo + " newId:" + newId)
-        val numId = {
-          if (newId.contains("Some")) {
-            newId.substring(newId.lastIndexOf('(') + 1, newId.lastIndexOf(')')).toLong
-          }
-          else {
-            newId.toLong
-          }
-        }
-        println("New entry in the db. instrument:" + instrument + ", newId:" + numId)
-        // newId is database id. USe it to retrieve the new row
-        val newDataPoint: DataPoint = table.filter(_.id === numId).list.last
-        sendTo ! newDataPoint
-      }
-    })
-
-    val statement: Statement = pgConnection.createStatement()
-    statement.addBatch("LISTEN " + marketDataSettings.instrument)
-    statement.executeBatch()
-    statement.close()
+    self ! "LOCK FOR NEW DP"
   }
 
   override def postStop() {
@@ -78,7 +33,7 @@ class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings
   }
 
   override def receive: Receive = {
-    case RequestNext(numOfPoints) =>
+    case RequestNext(numOfPoints) => {
       log.debug("Received: RequestNext " + numOfPoints + " dataPoints.")
       val idOfLastDataPoint = table.sortBy(_.id.asc.reverse).take(1).list.last.id.get
       val dataPointsToReturn = table.sortBy(_.id).filter(x => x.id > idLastSentDP && x.id <= (idLastSentDP + numOfPoints)).list
@@ -96,11 +51,19 @@ class LiveDataActor(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings
         liveData(sender)
       }
       log.debug("Finished processing: RequestBTData, return size:" + dataPointsToReturn.size)
-
+    }
+    case "LOCK FOR NEW DP" => {
+      val newDPs = table.filter(_.id > idLastSentDP).sortBy(_.id).list
+      newDPs.foreach(x => {
+        idLastSentDP = x.id.get
+        coordinator ! x
+      })
+      context.system.scheduler.scheduleOnce(10 seconds, self, "LOCK FOR NEW DP")
+    }
   }
 }
 
-object LiveDataActor {
-  def props(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long): Props =
-    Props(new LiveDataActor(databaseFactory, marketDataSettings, idStartPoint))
-}
+  object LiveDataActor {
+    def props(databaseFactory: JdbcBackend.DatabaseDef, marketDataSettings: MarketDataSettings, idStartPoint: Long, coordinator: ActorRef): Props =
+      Props(new LiveDataActor(databaseFactory, marketDataSettings, idStartPoint, coordinator))
+  }

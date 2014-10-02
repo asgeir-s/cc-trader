@@ -2,7 +2,6 @@ package com.cctrader.systems.classical.macd
 
 import akka.actor.{ActorRef, Props}
 import com.cctrader.TSCoordinatorActor
-import com.cctrader.data._
 
 /**
  * Shows how to implement a TSCoordinatorActor.

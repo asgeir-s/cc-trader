@@ -2,11 +2,8 @@ package com.cctrader.systems.ann.forwardIndicator
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{MarketDataSet, Signal, Signaler, TSSettings}
-import com.cctrader.indicators.InputIndicator
-import com.cctrader.indicators.machin.ANNOnePeriodAhead
+import com.cctrader.data.{MarketDataSet, Signal, Signaler}
 import com.cctrader.indicators.technical._
-import com.typesafe.config.ConfigFactory
 
 /**
  *
@@ -63,14 +60,13 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     log.info("2Received new dataPoint. MarketDataSet is now: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
       + ", toDate" + marketDataSet.toDate)
 
-    //val prediction = indicator(marketDataSet.size-1, marketDataSet)
     val directIndicator = ann.directIndicator(marketDataSet)
-    //val prediction = ann(marketDataSet)
+    val prediction = ann(marketDataSet)
     println("NEW DATAPOINT:")
     println("directIndicator:" + directIndicator)
-    //println("prediction:" + prediction)
+    println("prediction:" + prediction)
     if(reversal) {
-      if (directIndicator < thresholdLong) {
+      if (directIndicator < thresholdLong || prediction < thresholdLong) {
         if(signalWriter.status.equals(Signal.CLOSE)){
           goLong
         }
@@ -79,7 +75,7 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
           goLong
         }
       }
-      else if (directIndicator > thresholdShort) {
+      else if (directIndicator > thresholdShort || prediction > thresholdShort) {
         if (signalWriter.status.equals(Signal.CLOSE)) {
           goShort
         }
@@ -98,7 +94,7 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
       }
     }
     else {
-      if (directIndicator > thresholdLong) {
+      if (directIndicator > thresholdLong  || prediction > thresholdLong) {
         if(signalWriter.status.equals(Signal.CLOSE)){
           goLong
         }
@@ -107,7 +103,7 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
           goLong
         }
       }
-      else if ( directIndicator < thresholdShort) {
+      else if (directIndicator < thresholdShort  || prediction < thresholdShort) {
         if (signalWriter.status.equals(Signal.CLOSE)) {
           goShort
         }

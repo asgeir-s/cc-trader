@@ -3,7 +3,6 @@ package com.cctrader.data
 import java.util.Date
 
 import com.cctrader.MarketDataSettings
-import org.apache.commons.math3.analysis.function.Sigmoid
 
 import scala.collection.mutable.ListBuffer
 

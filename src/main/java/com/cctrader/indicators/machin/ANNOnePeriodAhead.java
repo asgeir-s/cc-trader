@@ -2,7 +2,8 @@ package com.cctrader.indicators.machin;
 
 import com.cctrader.data.MarketDataSet;
 import com.cctrader.data.TSSettings;
-import com.cctrader.indicators.fundamental.*;
+import com.cctrader.indicators.fundamental.MovingAverageTransactionsPerBlockOscillator;
+import com.cctrader.indicators.fundamental.NumberOfBTCTransactionsOscillator;
 import com.cctrader.indicators.technical.*;
 import org.encog.engine.network.activation.ActivationTANH;
 import org.encog.ml.data.MLData;

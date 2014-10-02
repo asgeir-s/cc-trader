@@ -2,8 +2,8 @@ package com.cctrader.systems.classical.oppositeROC
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{Signal, MarketDataSet, Signaler}
-import com.cctrader.indicators.technical.{RateOfChange, RelativeStrengthIndex}
+import com.cctrader.data.{MarketDataSet, Signal, Signaler}
+import com.cctrader.indicators.technical.RateOfChange
 
 /**
  *

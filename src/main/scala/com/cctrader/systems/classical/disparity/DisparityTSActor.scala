@@ -3,7 +3,7 @@ package com.cctrader.systems.classical.disparity
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
 import com.cctrader.data.{MarketDataSet, Signal, Signaler}
-import com.cctrader.indicators.technical.{DisparityIndex, RelativeStrengthIndex}
+import com.cctrader.indicators.technical.DisparityIndex
 
 /**
  *

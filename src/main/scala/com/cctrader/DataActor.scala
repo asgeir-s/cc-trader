@@ -9,7 +9,7 @@ import com.typesafe.config.ConfigFactory
 
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.JdbcBackend.Database
-import scala.slick.jdbc.{StaticQuery => Q, JdbcBackend, ResultSetConcurrency}
+import scala.slick.jdbc.{JdbcBackend, ResultSetConcurrency, StaticQuery => Q}
 
 /**
  *
@@ -62,7 +62,7 @@ class DataActor extends Actor with ActorLogging {
     case marketDataSettings: MarketDataSettings =>
       log.info("Received: MarketDataSettings: getting data from database and sending back for MarketDataSettings:" + marketDataSettings)
       val thisMarketDataSet = getDataFromDB(marketDataSettings)
-      sender ! Initialize(thisMarketDataSet, context.actorOf(LiveDataActor.props(databaseFactory,  marketDataSettings, thisMarketDataSet.last.id.get)))
+      sender ! Initialize(thisMarketDataSet, context.actorOf(LiveDataActor.props(databaseFactory,  marketDataSettings, thisMarketDataSet.last.id.get, sender)))
       println(thisMarketDataSet)
   }
 }

@@ -2,7 +2,7 @@ package com.cctrader.systems.classical.stochastic
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{Signal, Signaler, MarketDataSet}
+import com.cctrader.data.{MarketDataSet, Signal, Signaler}
 import com.cctrader.indicators.technical.{StochasticD, StochasticK}
 
 /**

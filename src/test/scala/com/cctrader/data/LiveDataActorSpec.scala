@@ -31,7 +31,7 @@ class LiveDataActorSpec extends UnitTest {
     instrument = "bitstamp_btc_usd_5min"
   )
 
-  val liveDataActorRef = TestActorRef(new LiveDataActor(databaseFactory, marketDataSettings, 78726))
+  val liveDataActorRef = TestActorRef(new LiveDataActor(databaseFactory, marketDataSettings, 78726, tsCoordinator.ref))
   val dummyTSCoordinatorActor = liveDataActorRef.underlyingActor
 
   "When receiving RequestNext it" should "return the next specified number of dataPoints" in {

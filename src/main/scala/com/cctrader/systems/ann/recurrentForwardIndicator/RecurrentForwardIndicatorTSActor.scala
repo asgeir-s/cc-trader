@@ -3,7 +3,6 @@ package com.cctrader.systems.ann.recurrentForwardIndicator
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
 import com.cctrader.data.{MarketDataSet, Signal, Signaler}
-import com.typesafe.config.ConfigFactory
 
 /**
  *

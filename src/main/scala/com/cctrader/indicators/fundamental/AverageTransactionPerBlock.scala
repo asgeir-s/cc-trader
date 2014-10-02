@@ -1,7 +1,7 @@
 package com.cctrader.indicators.fundamental
 
 import com.cctrader.data.MarketDataSet
-import com.cctrader.indicators.{HelperIndicators, InputIndicator}
+import com.cctrader.indicators.HelperIndicators
 
 import scala.io.Source
 

@@ -1,23 +1,12 @@
 package com.cctrader
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.cctrader.systems.ann.forwardIndicator.ForwardIndicatorsCoordinatorActor
-import com.cctrader.systems.ann.recurrentForwardIndicator.RecurrentCoordinatorActor
-import com.cctrader.systems.classical.oppositeAroon.OppositeAroonCoordinatorActor
-import com.cctrader.systems.classical.oppositeDisparity.OppositeDisparityCoordinatorActor
-import com.cctrader.systems.classical.oppositeROC.OppositeROCCoordinatorActor
-import com.cctrader.systems.classical.oppositeStochastic.OppositeStochasticCoordinatorActor
-import com.cctrader.systems.classical.oppositeWilliamR.OppositeWilliamRCoordinatorActor
-import com.cctrader.systems.classical.roc.ROCCoordinatorActor
-import com.cctrader.systems.classical.williamR.WilliamRCoordinatorActor
-import com.cctrader.systems.classical.rsi.RSICoordinatorActor
 import com.cctrader.systems.classical.aroon.AroonCoordinatorActor
 import com.cctrader.systems.classical.disparity.DisparityCoordinatorActor
 import com.cctrader.systems.classical.macd.MACDCoordinatorActor
-import com.cctrader.systems.classical.oppositeMACD.OppositeMACDCoordinatorActor
 import com.cctrader.systems.classical.oppositeRSI.OppositeRSICoordinatorActor
-import com.cctrader.systems.classical.stochastic.StochasticCoordinatorActor
-import com.cctrader.systems.testDummy.DummyCoordinatorActor
+import com.cctrader.systems.classical.roc.ROCCoordinatorActor
+import com.cctrader.systems.classical.williamR.WilliamRCoordinatorActor
 import com.typesafe.config.ConfigFactory
 
 /**
@@ -27,7 +16,7 @@ class MasterActor extends Actor with ActorLogging {
 
   val config = ConfigFactory.load()
   val tableName = config.getString("instrumentTable")
-  val granularity = "_12hour"
+  val granularity = "_2hour"
 
   val dataActor = context.actorOf(Props[DataActor], "dataActor")
 
@@ -39,14 +28,15 @@ class MasterActor extends Actor with ActorLogging {
 
 
   //Classical
-  //context.actorOf(StochasticCoordinatorActor.props(dataActor, "tsSettings/classical/stochastic/Stochastic" + granularity +".conf"))
-  //context.actorOf(RSICoordinatorActor.props(dataActor, "tsSettings/classical/RSI/RSI" + granularity +".conf"))
-  //context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC" + granularity +".conf"))
-  //context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR" + granularity +".conf"))
-  //context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity" + granularity +".conf"))
-  //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon" + granularity +".conf"))
-  //context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD" + granularity +".conf"))
-
+  /*
+  context.actorOf(StochasticCoordinatorActor.props(dataActor, "tsSettings/classical/stochastic/Stochastic" + granularity +".conf"))
+  context.actorOf(RSICoordinatorActor.props(dataActor, "tsSettings/classical/RSI/RSI" + granularity +".conf"))
+  context.actorOf(ROCCoordinatorActor.props(dataActor, "tsSettings/classical/ROC/ROC" + granularity +".conf"))
+  context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR" + granularity +".conf"))
+  context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity" + granularity +".conf"))
+  context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon" + granularity +".conf"))
+  context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD" + granularity +".conf"))
+*/
   /*
 
   //Classical Opposite
@@ -62,8 +52,8 @@ class MasterActor extends Actor with ActorLogging {
   //DE BESTE SYSTEMENE. (brukes på SOL)
 
   //2hour - TOP SYSTEMS - når et 2hour system er aktivert så virker ikke notification for de andre
-  //context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_2hour.conf"))
-  //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_2hour.conf"))
+  context.actorOf(OppositeRSICoordinatorActor.props(dataActor, "tsSettings/classical/oppositeRSI/OppositeRSI_2hour.conf"))
+  context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon_2hour.conf"))
 
 
   //6hour - TOP SYSTEMS

@@ -2,8 +2,8 @@ package com.cctrader.indicators.fundamental
 
 import java.util.Date
 
+import com.cctrader.data.{DataPoint, MarketDataSet}
 import com.cctrader.{MarketDataSettings, UnitTest}
-import com.cctrader.data.{MarketDataSet, DataPoint}
 
 /**
  *

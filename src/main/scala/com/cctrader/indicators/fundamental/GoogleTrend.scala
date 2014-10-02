@@ -3,8 +3,6 @@ package com.cctrader.indicators.fundamental
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 
-import scala.collection.immutable.TreeMap
-
 /**
  *
  */

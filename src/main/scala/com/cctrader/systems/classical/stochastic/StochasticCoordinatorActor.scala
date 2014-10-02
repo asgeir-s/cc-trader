@@ -1,8 +1,7 @@
 package com.cctrader.systems.classical.stochastic
 
-import akka.actor.{Props, ActorRef}
+import akka.actor.{ActorRef, Props}
 import com.cctrader.TSCoordinatorActor
-import com.cctrader.systems.classical.oppositeRSI.OppositeRSITSActor
 
 /**
  *

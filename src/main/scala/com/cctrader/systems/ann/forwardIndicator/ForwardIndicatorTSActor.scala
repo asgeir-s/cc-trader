@@ -51,6 +51,7 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
+
   /**
    * Evaluate new dataPoint.
    * Should be of the same granularity as the training set.
@@ -65,17 +66,21 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     println("NEW DATAPOINT:")
     println("directIndicator:" + directIndicator)
     println("prediction:" + prediction)
-    if(reversal) {
-      if (directIndicator < thresholdLong || prediction < thresholdLong) {
-        if(signalWriter.status.equals(Signal.CLOSE)){
+
+    if (reversal) {
+      //Take Long position
+      if (directIndicator < thresholdLong) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
           goLong
         }
-        else if (signalWriter.status == Signal.SHORT){
+        else if (signalWriter.status == Signal.SHORT) {
           goClose
           goLong
         }
       }
-      else if (directIndicator > thresholdShort || prediction > thresholdShort) {
+
+      //Take Short position
+      else if (directIndicator > thresholdShort) {
         if (signalWriter.status.equals(Signal.CLOSE)) {
           goShort
         }
@@ -84,26 +89,66 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
           goShort
         }
       }
-      else if (!signalWriter.status.equals(Signal.CLOSE)) {
-        if ((directIndicator > thresholdCloseLong ) && signalWriter.status == Signal.LONG) {
-          goClose
+
+      //Close Long position
+      else if (signalWriter.status == Signal.LONG && directIndicator > thresholdCloseLong) {
+        goClose
+      }
+
+      //Close Short position
+      else if (signalWriter.status == Signal.SHORT && directIndicator < thresholdCloseShort) {
+        goClose
+      }
+
+      //Take Long position based on prediction
+      else if (prediction < thresholdLong) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
+          goLong
         }
-        else if ((directIndicator < thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
+        else if (signalWriter.status == Signal.SHORT) {
           goClose
+          goLong
         }
       }
+
+      //Take Short position based on prediction
+      else if (prediction > thresholdShort) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
+          goShort
+        }
+        else if (signalWriter.status == Signal.LONG) {
+          goClose
+          goShort
+        }
+      }
+
+        /*
+      //Close Long position based on prediction
+      else if (signalWriter.status == Signal.LONG && prediction > thresholdCloseLong) {
+        goClose
+      }
+
+      //Close Short position based on prediction
+      else if (signalWriter.status == Signal.SHORT && prediction < thresholdCloseShort) {
+        goClose
+      }
+      */
+
     }
     else {
-      if (directIndicator > thresholdLong  || prediction > thresholdLong) {
-        if(signalWriter.status.equals(Signal.CLOSE)){
+      //Take Long position
+      if (directIndicator > thresholdLong) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
           goLong
         }
-        else if (signalWriter.status == Signal.SHORT){
+        else if (signalWriter.status == Signal.SHORT) {
           goClose
           goLong
         }
       }
-      else if (directIndicator < thresholdShort  || prediction < thresholdShort) {
+
+      //Take Short position
+      else if (directIndicator < thresholdShort) {
         if (signalWriter.status.equals(Signal.CLOSE)) {
           goShort
         }
@@ -112,16 +157,51 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
           goShort
         }
       }
-      else if (!signalWriter.status.equals(Signal.CLOSE)) {
-        if ((directIndicator < thresholdCloseLong) && signalWriter.status == Signal.LONG) {
-          goClose
+
+      //Close Long position
+      else if (signalWriter.status == Signal.LONG && directIndicator < thresholdCloseLong) {
+        goClose
+      }
+
+      //Close Short position
+      else if (signalWriter.status == Signal.SHORT && directIndicator > thresholdCloseShort) {
+        goClose
+      }
+
+      //Take Long position based on prediction
+      else if (prediction > thresholdLong) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
+          goLong
         }
-        else if ((directIndicator > thresholdCloseShort) && signalWriter.status == Signal.SHORT) {
+        else if (signalWriter.status == Signal.SHORT) {
           goClose
+          goLong
         }
       }
-    }
 
+      //Take Short position based on prediction
+      else if (prediction < thresholdShort) {
+        if (signalWriter.status.equals(Signal.CLOSE)) {
+          goShort
+        }
+        else if (signalWriter.status == Signal.LONG) {
+          goClose
+          goShort
+        }
+      }
+
+        /*
+      //Close Long position
+      else if (signalWriter.status == Signal.LONG && prediction < thresholdCloseLong) {
+        goClose
+      }
+
+      //Close Short position
+      else if (signalWriter.status == Signal.SHORT && prediction > thresholdCloseShort) {
+        goClose
+      }
+*/
+    }
   }
 }
 

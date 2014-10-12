@@ -9,7 +9,7 @@ import com.cctrader.data._
 import com.cctrader.dbtables.{TSInfo, TSTable}
 import com.typesafe.config.ConfigFactory
 
-import scala.concurrent.Await
+import scala.concurrent.{Future, Await}
 import scala.concurrent.duration._
 import scala.slick.driver.PostgresDriver.simple._
 import scala.slick.jdbc.meta.MTable
@@ -157,7 +157,10 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
       if (nextSystemReady && (mode == Mode.LIVE || newDataPoint.date.after(transferToNextSystemDate))) {
         if (hasRunningTS) {
           log.debug("Sending PoisonPill to (current) tradingSystem")
-          tradingSystemActor ! PoisonPill
+          import akka.pattern.gracefulStop
+          val stopped: Future[Boolean] = gracefulStop(tradingSystemActor, 5 seconds)
+          Await.result(stopped, 6 seconds)
+          //tradingSystemActor ! PoisonPill
         }
         log.debug("Transferring to nextTradingSystemActor")
         tradingSystemActor = nextTradingSystem

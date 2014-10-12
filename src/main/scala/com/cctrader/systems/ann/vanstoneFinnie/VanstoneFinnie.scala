@@ -1,4 +1,4 @@
-package com.cctrader.systems.ann.forwardIndicator
+package com.cctrader.systems.ann.vanstoneFinnie
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
@@ -16,7 +16,7 @@ import org.encog.neural.networks.training.{Train, TrainingSetScore}
 /**
  *
  */
-class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) {
+class VanstoneFinnie(settingsPath: String) {
   println("ForwardIndicator has started")
   var network = new BasicNetwork
 
@@ -51,11 +51,8 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
     stochasticD,
     new StochasticSlowD(stochasticD, config.getInt("indicators.stochasticSlowD")),
     new VolumeOscillator(config.getInt("indicators.volumeOscillatorFast"), config.getInt("indicators.volumeOscillatorSlow")),
-    new WilliamsR(config.getInt("indicators.williamsR"))//,
+    new WilliamsR(config.getInt("indicators.williamsR")) //,
   )
-
-  val outPutIndicator = indicatorsINPUT.filter(_.getClass.equals(outPutIndicatorIn.getClass))(0)
-
 
   private final val pointsNeededToCompute: Int = numberOfInputPeriods * config.getInt("pointsNeededToCompute") + 1
 
@@ -79,16 +76,15 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
   network.reset()
 
   def inputMaker(index: Int, data: MarketDataSet): Array[Double] = {
-
     var input: Array[Double] = Array[Double]()
-    if(normalizeInput) {
+    if (normalizeInput) {
       for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x.getReScaled(index-j, data)).toArray
+        input = input ++: indicatorsINPUT.map(x => x.getReScaled(index - j, data)).toArray
       }
     }
     else {
       for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x(index-j, data)).toArray
+        input = input ++: indicatorsINPUT.map(x => x(index - j, data)).toArray
       }
     }
     input
@@ -102,7 +98,7 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
   def train(data: MarketDataSet): Double = {
 
     // setting max and min input based on training-set
-    if(initialtraining && normalizeInput) {
+    if (initialtraining && normalizeInput) {
       indicatorsINPUT.foreach(_.setNormalizationBounds(data, pointsNeededToCompute))
       indicatorsINPUT.foreach(_.normOutRange(-1, 1))
     }
@@ -114,13 +110,12 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
 
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
         input(i - pointsNeededToCompute) = inputMaker(i, data)
-        ideal(i - pointsNeededToCompute) = idealOutput(data, i)
-        if(i%100 == 0) {
+        ideal(i - pointsNeededToCompute) = idealOUTPUTMaxClose(data, i)
+        if (i % 100 == 0) {
           println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size + "):")
           println(input(i - pointsNeededToCompute).toVector)
           println("Output #" + i + ":")
           println(ideal(i - pointsNeededToCompute).toVector)
-          println("descaled:" + outPutIndicator.deScaled(ideal(i - pointsNeededToCompute)(0)))
         }
       }
       new BasicMLDataSet(input, ideal)
@@ -134,7 +129,7 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
     do {
       train.iteration()
       val error: Double = train.getError
-      if(epoch%1000==0) {
+      if (epoch % 1000 == 0) {
         println("Iteration(Backprop) #" + epoch + " Error:" + error)
       }
       /*
@@ -177,13 +172,8 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
    * @return the prediction. Based on the selected idealOUTPUT
    */
   def apply(data: MarketDataSet): Double = {
-    val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size-1, data)))
-    val predict: Double = predictData.getData(0)
-    outPutIndicator.deScaled(predict)
-  }
-
-  def directIndicator(data: MarketDataSet) = {
-    outPutIndicator(data.size-1, data)
+    val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size - 1, data)))
+    predictData.getData(0)
   }
 
 
@@ -232,15 +222,15 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
     Array((movingAveragePriceOut(index + pointsToLookAhed, marketDataSet) - marketDataSet(index).close) / marketDataSet(index).close)
   }
 */
-
-  /**
-   * Possible idealOUTPUT:
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOutput(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array(outPutIndicator.getReScaled(index + pointsToLookAhed, marketDataSet))
-  }
-
+  /*
+    /**
+     * Possible idealOUTPUT:
+     * @param marketDataSet the marketDataSet to use for computing the ideal output
+     * @param index the index of the point that should predict the output
+     * @return the predicted output
+     */
+    private def idealOutput(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
+      Array(outPutIndicator.getReScaled(index + pointsToLookAhed, marketDataSet))
+    }
+  */
 }

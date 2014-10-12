@@ -1,10 +1,10 @@
-package com.cctrader.systems.ann.forwardIndicator
+package com.cctrader.systems.ann.fourWayClassify
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 import com.cctrader.indicators.technical._
 import com.typesafe.config.ConfigFactory
-import org.encog.engine.network.activation.ActivationTANH
+import org.encog.engine.network.activation.{ActivationSigmoid, ActivationCompetitive, ActivationTANH}
 import org.encog.ml.data.basic.{BasicMLData, BasicMLDataSet}
 import org.encog.ml.data.{MLData, MLDataSet}
 import org.encog.neural.networks.BasicNetwork
@@ -16,7 +16,7 @@ import org.encog.neural.networks.training.{Train, TrainingSetScore}
 /**
  *
  */
-class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) {
+class FourWayClassifyANN(settingsPath: String) {
   println("ForwardIndicator has started")
   var network = new BasicNetwork
 
@@ -54,9 +54,6 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
     new WilliamsR(config.getInt("indicators.williamsR"))//,
   )
 
-  val outPutIndicator = indicatorsINPUT.filter(_.getClass.equals(outPutIndicatorIn.getClass))(0)
-
-
   private final val pointsNeededToCompute: Int = numberOfInputPeriods * config.getInt("pointsNeededToCompute") + 1
 
   //Builds the network
@@ -74,7 +71,7 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
     network.addLayer(new BasicLayer(new ActivationTANH, true, neuronsInHiddenLayer3))
     println("Add hidden layer #3, with size: " + neuronsInHiddenLayer3)
   }
-  network.addLayer(new BasicLayer(new ActivationTANH, false, 1))
+  network.addLayer(new BasicLayer(new ActivationSigmoid, false, 4)) //ActivationCompetitive
   network.getStructure.finalizeStructure()
   network.reset()
 
@@ -114,26 +111,29 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
 
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
         input(i - pointsNeededToCompute) = inputMaker(i, data)
-        ideal(i - pointsNeededToCompute) = idealOutput(data, i)
+        ideal(i - pointsNeededToCompute) = idealOUTPUTClassify(data, i)
         if(i%100 == 0) {
           println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size + "):")
           println(input(i - pointsNeededToCompute).toVector)
           println("Output #" + i + ":")
           println(ideal(i - pointsNeededToCompute).toVector)
-          println("descaled:" + outPutIndicator.deScaled(ideal(i - pointsNeededToCompute)(0)))
         }
       }
       new BasicMLDataSet(input, ideal)
     }
+    println("START TRAINING")
 
     val train: Train = new Backpropagation(network, mlDataSet, learningRate, momentum)
+
 
     var lastError: Double = Double.MaxValue
     var lastAnneal: Int = 0
     var epoch = 0
     do {
       train.iteration()
+
       val error: Double = train.getError
+
       if(epoch%1000==0) {
         println("Iteration(Backprop) #" + epoch + " Error:" + error)
       }
@@ -176,14 +176,8 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
    * @param data marketDataSet to predict the feature of
    * @return the prediction. Based on the selected idealOUTPUT
    */
-  def apply(data: MarketDataSet): Double = {
-    val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size-1, data)))
-    val predict: Double = predictData.getData(0)
-    outPutIndicator.deScaled(predict)
-  }
-
-  def directIndicator(data: MarketDataSet) = {
-    outPutIndicator(data.size-1, data)
+  def apply(data: MarketDataSet): Array[Double] = {
+    network.compute(new BasicMLData(inputMaker(data.size-1, data))).getData
   }
 
 
@@ -193,54 +187,24 @@ class ForwardIndicator(settingsPath: String, outPutIndicatorIn: InputIndicator) 
    * @param index the index of the point that should predict the output
    * @return the predicted output
    */
-  private def idealOUTPUTMaxClose(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    var maxClose: Double = 0
-    for (i <- 0 until pointsToLookAhed) {
-      if (marketDataSet(index + i).close > maxClose) {
-        maxClose = marketDataSet.apply(index + i).close
-      }
+  private def idealOUTPUTClassify(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
+    val diff = marketDataSet(index + pointsToLookAhed).close - marketDataSet(index).close
+    val percentDiff = (100D/marketDataSet(index).close) * diff
+    var array = Array(0D,0D,0D,0D)
+
+    if(percentDiff >= 2) {
+      array = Array(1D,0D,0D,0D)
     }
-    Array((maxClose - marketDataSet(index).close) / marketDataSet(index).close)
-  }
-
-  /*
-  /**
-   * Possible idealOUTPUT:
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOUTPUTMMaxMovingAverage(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    var maxMovingAverage: Double = 0
-    for (i <- 0 until pointsToLookAhed) {
-      if (movingAveragePriceOut(index + i, marketDataSet) > maxMovingAverage) {
-        maxMovingAverage = movingAveragePriceOut(index + i, marketDataSet)
-      }
+    else if(percentDiff <= -2) {
+      array = Array(0D,0D,0D,1D)
     }
-    Array((maxMovingAverage - marketDataSet.apply(index).close) / marketDataSet(index).close)
-  }
-  */
-
-  /*
-  /**
-   * Possible idealOUTPUT:
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOUTPUTMovingAverage(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array((movingAveragePriceOut(index + pointsToLookAhed, marketDataSet) - marketDataSet(index).close) / marketDataSet(index).close)
-  }
-*/
-
-  /**
-   * Possible idealOUTPUT:
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOutput(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    Array(outPutIndicator.getReScaled(index + pointsToLookAhed, marketDataSet))
+    else if(percentDiff > 0 && percentDiff < 2) {
+      array = Array(0D,1D,0D,0D)
+    }
+    else if(percentDiff < 0 && percentDiff > -2) {
+      array = Array(0D,0D,1D,0D)
+    }
+    array
   }
 
 }

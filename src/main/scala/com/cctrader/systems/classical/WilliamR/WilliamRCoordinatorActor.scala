@@ -1,6 +1,6 @@
 package com.cctrader.systems.classical.williamR
 
-import akka.actor.{Props, ActorRef}
+import akka.actor.{ActorRef, Props}
 import com.cctrader.TSCoordinatorActor
 
 /**

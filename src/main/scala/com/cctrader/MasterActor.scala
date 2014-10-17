@@ -21,7 +21,7 @@ class MasterActor extends Actor with ActorLogging {
 
   val config = ConfigFactory.load()
   val tableName = config.getString("instrumentTable")
-  val granularity = "_day"
+  val granularity = "_2hour"
 
   val dataActor = context.actorOf(Props[DataActor], "dataActor")
 
@@ -30,7 +30,26 @@ class MasterActor extends Actor with ActorLogging {
   //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/disparity/Disparity" + granularity +".conf"))
   //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/ROC/ROC" + granularity +".conf"))
   //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/williamsR/WilliamsR" + granularity +".conf"))
-  //context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnie" + granularity +".conf"))
+
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+
+  /*
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+  context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+  */
+
+
+  //context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+  //context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+
+
   //Classify
   //context.actorOf(FourWayClassifyCoordinatorActor.props(dataActor, "tsSettings/ann/fourWayClassify/FourWayClassify" + granularity +".conf"))
 
@@ -42,7 +61,7 @@ class MasterActor extends Actor with ActorLogging {
   //context.actorOf(WilliamRCoordinatorActor.props(dataActor, "tsSettings/classical/WilliamR/WilliamR" + granularity +".conf"))
   //context.actorOf(DisparityCoordinatorActor.props(dataActor, "tsSettings/classical/Disparity/Disparity" + granularity +".conf"))
   //context.actorOf(AroonCoordinatorActor.props(dataActor, "tsSettings/classical/Aroon/Aroon" + granularity +".conf"))
-  context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD" + granularity +".conf"))
+  //context.actorOf(MACDCoordinatorActor.props(dataActor, "tsSettings/classical/MACD/MACD" + granularity +".conf"))
 
   /*
 

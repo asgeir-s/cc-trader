@@ -158,8 +158,8 @@ trait TSCoordinatorActor extends Actor with ActorLogging {
         if (hasRunningTS) {
           log.debug("Sending PoisonPill to (current) tradingSystem")
           import akka.pattern.gracefulStop
-          val stopped: Future[Boolean] = gracefulStop(tradingSystemActor, 5 seconds)
-          Await.result(stopped, 6 seconds)
+          val stopped: Future[Boolean] = gracefulStop(tradingSystemActor, 60 seconds)
+          Await.result(stopped, 80 seconds)
           //tradingSystemActor ! PoisonPill
         }
         log.debug("Transferring to nextTradingSystemActor")

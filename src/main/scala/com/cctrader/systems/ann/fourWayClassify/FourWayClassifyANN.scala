@@ -137,14 +137,7 @@ class FourWayClassifyANN(settingsPath: String) {
       if(epoch%1000==0) {
         println("Iteration(Backprop) #" + epoch + " Error:" + error)
       }
-      /*
-      if (error > 0.05) {
-        if ((lastAnneal > 30) && (error > lastError || Math.abs(error - lastError) < 0.0001)) {
-          trainNetworkAnneal(mlDataSet)
-          lastAnneal = 0
-        }
-      }
-      */
+
       lastError = train.getError
       lastAnneal += 1
       epoch += 1

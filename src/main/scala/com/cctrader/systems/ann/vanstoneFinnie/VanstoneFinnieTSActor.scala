@@ -16,7 +16,8 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
 
   var count = 0
 
-  val ann = new VanstoneFinnie(settingPath)
+  val annUp = new VanstoneFinnie(settingPath, true)
+  val annDown = new VanstoneFinnie(settingPath, false)
 
   /**
    * Train the system.
@@ -25,7 +26,8 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
    */
   override def train(trainingMarketDataSet: MarketDataSet): Long = {
     val startTrainingTime = System.currentTimeMillis()
-    ann.train(trainingMarketDataSet)
+    annUp.train(trainingMarketDataSet)
+    annDown.train(trainingMarketDataSet)
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
@@ -39,11 +41,15 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
     log.info("2Received new dataPoint. MarketDataSet is now: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
       + ", toDate" + marketDataSet.toDate)
 
-    val prediction = ann(marketDataSet)
+    val predictionMaxUp = annUp(marketDataSet)
+    val predictionMinDown = annDown(marketDataSet)
+
     println("NEW DATAPOINT:")
-    println("prediction:" + prediction)
+    println("predictionMaxUp:" + predictionMaxUp)
+    println("predictionMinDown:" + predictionMinDown)
+
     //Take Long position
-    if (prediction > thresholdLong) {
+    if (predictionMaxUp.abs > (predictionMinDown.abs + thresholdLong)) {
       if (signalWriter.status.equals(Signal.CLOSE)) {
         goLong
       }
@@ -54,7 +60,7 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
     }
 
     //Take Short position
-    else if (prediction < thresholdShort) {
+    else if ((predictionMaxUp.abs + thresholdShort) < predictionMinDown.abs) {
       if (signalWriter.status.equals(Signal.CLOSE)) {
         goShort
       }
@@ -65,12 +71,12 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
     }
 
     //Close Long position
-    else if (signalWriter.status == Signal.LONG && prediction < thresholdCloseLong) {
+    else if (signalWriter.status == Signal.LONG && (predictionMinDown.abs > predictionMaxUp.abs)) {
       goClose
     }
 
     //Close Short position
-    else if (signalWriter.status == Signal.SHORT && prediction > thresholdCloseShort) {
+    else if (signalWriter.status == Signal.SHORT && (predictionMinDown.abs < predictionMaxUp.abs)) {
       goClose
     }
   }

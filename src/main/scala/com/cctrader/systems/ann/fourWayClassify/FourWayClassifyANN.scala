@@ -137,14 +137,7 @@ class FourWayClassifyANN(settingsPath: String) {
       if(epoch%1000==0) {
         println("Iteration(Backprop) #" + epoch + " Error:" + error)
       }
-      /*
-      if (error > 0.05) {
-        if ((lastAnneal > 30) && (error > lastError || Math.abs(error - lastError) < 0.0001)) {
-          trainNetworkAnneal(mlDataSet)
-          lastAnneal = 0
-        }
-      }
-      */
+
       lastError = train.getError
       lastAnneal += 1
       epoch += 1
@@ -192,16 +185,16 @@ class FourWayClassifyANN(settingsPath: String) {
     val percentDiff = (100D/marketDataSet(index).close) * diff
     var array = Array(0D,0D,0D,0D)
 
-    if(percentDiff >= 2) {
+    if(percentDiff > 0.7) { // 2 for day
       array = Array(1D,0D,0D,0D)
     }
-    else if(percentDiff <= -2) {
+    else if(percentDiff < -0.7) { // 2 for day
       array = Array(0D,0D,0D,1D)
     }
-    else if(percentDiff > 0 && percentDiff < 2) {
+    else if(percentDiff > 0 && percentDiff <= 0.7) { // 2 for day
       array = Array(0D,1D,0D,0D)
     }
-    else if(percentDiff < 0 && percentDiff > -2) {
+    else if(percentDiff < 0 && percentDiff >= -0.7) { // 2 for day
       array = Array(0D,0D,1D,0D)
     }
     array

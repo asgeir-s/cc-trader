@@ -3,6 +3,8 @@ package com.cctrader
 import akka.actor.{Actor, ActorLogging, Props}
 import com.cctrader.systems.ann.forwardIndicator.ForwardIndicatorsCoordinatorActor
 import com.cctrader.systems.ann.fourWayClassify.FourWayClassifyCoordinatorActor
+import com.cctrader.systems.ann.fuzzy.FuzzyClassifyCoordinatorActor
+import com.cctrader.systems.ann.priceDirection.PriceDirectionCoordinatorActor
 import com.cctrader.systems.ann.vanstoneFinnie.VanstoneFinnieCoordinatorActor
 import com.cctrader.systems.classical.aroon.AroonCoordinatorActor
 import com.cctrader.systems.classical.disparity.DisparityCoordinatorActor
@@ -29,10 +31,24 @@ class MasterActor extends Actor with ActorLogging {
   //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/aroon/Aroon" + granularity +".conf"))
   //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/disparity/Disparity" + granularity +".conf"))
   //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/ROC/ROC" + granularity +".conf"))
-  //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/williamsR/WilliamsR" + granularity +".conf"))
-  //context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnie" + granularity +".conf"))
+  //context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/macd/MACD" + granularity +".conf"))
+  //context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutA" + granularity +".conf"))
+  //context.actorOf(VanstoneFinnieCoordinatorActor.props(dataActor, "tsSettings/ann/vanstoneFinnie/VanstoneFinnieOutB" + granularity +".conf"))
+
+  context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/macd/MACD" + granularity +".conf"))
+  context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/macd/MACD" + granularity +".conf"))
+  context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/macd/MACD" + granularity +".conf"))
+  context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/macd/MACD" + granularity +".conf"))
+  context.actorOf(ForwardIndicatorsCoordinatorActor.props(dataActor, "tsSettings/ann/forwardIndicator/macd/MACD" + granularity +".conf"))
+
+
   //Classify
   //context.actorOf(FourWayClassifyCoordinatorActor.props(dataActor, "tsSettings/ann/fourWayClassify/FourWayClassify" + granularity +".conf"))
+
+  //context.actorOf(FuzzyClassifyCoordinatorActor.props(dataActor, "tsSettings/ann/fuzzy/Fuzzy" + granularity +".conf"))
+
+  //context.actorOf(PriceDirectionCoordinatorActor.props(dataActor, "tsSettings/ann/priceDirection/PriceDirection" + granularity +".conf"))
+
 
   //Classical
 

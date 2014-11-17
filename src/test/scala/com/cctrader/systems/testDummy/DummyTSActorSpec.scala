@@ -48,7 +48,7 @@ class DummyTSActorSpec extends UnitTest {
 
   val tsCoordinatorProbe = TestProbe()
 
-  val dummyTSActorRef = TestActorRef(new DummyTSActor(marketDataSet, new Signaler("DummyTest", 99), "tsSettings/test/DummyTest1.conf"))
+  val dummyTSActorRef = TestActorRef(new DummyTSActor(marketDataSet, new Signaler("DummyTest", 99), "tsSettings/test/DummyTest_5min.conf"))
   val dummyTSActor = dummyTSActorRef.underlyingActor
 
   "When the actor receive StartTraining message it" should "train the actor" in {

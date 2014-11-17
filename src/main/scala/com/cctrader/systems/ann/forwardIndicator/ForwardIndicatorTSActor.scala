@@ -29,6 +29,9 @@ class ForwardIndicatorsTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: S
     else if (output.equals("aroonOscillator")) {
       new AroonOscillator(config.getInt("indicators.aroonOscillator"))
     }
+    else if (output.equals("macd")) {
+      new MovingAverageExponentialConvergence(config.getInt("formula.fastPeriods"), config.getInt("formula.slowPeriods"))
+    }
     else {
       log.error("ForwardIndicator not correctly specified.")
       new RateOfChange(config.getInt("indicators.rateOfChange"))

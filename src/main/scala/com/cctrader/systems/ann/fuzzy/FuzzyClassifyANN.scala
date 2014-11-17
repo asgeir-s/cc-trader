@@ -1,12 +1,12 @@
-package com.cctrader.systems.ann.vanstoneFinnie
+package com.cctrader.systems.ann.fuzzy
 
 import com.cctrader.data.MarketDataSet
 import com.cctrader.indicators.InputIndicator
 import com.cctrader.indicators.technical._
 import com.typesafe.config.ConfigFactory
-import org.encog.engine.network.activation.ActivationTANH
+import org.encog.engine.network.activation.{ActivationSigmoid, ActivationTANH}
+import org.encog.ml.data.MLDataSet
 import org.encog.ml.data.basic.{BasicMLData, BasicMLDataSet}
-import org.encog.ml.data.{MLData, MLDataSet}
 import org.encog.neural.networks.BasicNetwork
 import org.encog.neural.networks.layers.BasicLayer
 import org.encog.neural.networks.training.anneal.NeuralSimulatedAnnealing
@@ -16,7 +16,7 @@ import org.encog.neural.networks.training.{Train, TrainingSetScore}
 /**
  *
  */
-class VanstoneFinnie(settingsPath: String, high: Boolean) {
+class FuzzyClassifyANN(settingsPath: String) {
   println("ForwardIndicator has started")
   var network = new BasicNetwork
 
@@ -32,9 +32,6 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
   val numberOfInputPeriods: Int = config.getInt("ml.numberOfInputPeriods")
   val normalizeInput = config.getBoolean("ml.normalizeInput")
   var initialtraining = true
-  val outputType = config.getString("outType")
-  val outA = outputType.equals("outA")
-  val outB = outputType.equals("outB")
 
   // inputs
   val stochasticK = new StochasticK(config.getInt("indicators.stochasticK"))
@@ -54,10 +51,8 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
     stochasticD,
     new StochasticSlowD(stochasticD, config.getInt("indicators.stochasticSlowD")),
     new VolumeOscillator(config.getInt("indicators.volumeOscillatorFast"), config.getInt("indicators.volumeOscillatorSlow")),
-    new WilliamsR(config.getInt("indicators.williamsR")) //,
+    new WilliamsR(config.getInt("indicators.williamsR"))//,
   )
-
-  val movingAveragePriceOut = new MovingAveragePrice(config.getInt("outMovingAverage"))
 
   private final val pointsNeededToCompute: Int = numberOfInputPeriods * config.getInt("pointsNeededToCompute") + 1
 
@@ -76,20 +71,21 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
     network.addLayer(new BasicLayer(new ActivationTANH, true, neuronsInHiddenLayer3))
     println("Add hidden layer #3, with size: " + neuronsInHiddenLayer3)
   }
-  network.addLayer(new BasicLayer(new ActivationTANH, false, 1))
+  network.addLayer(new BasicLayer(new ActivationSigmoid, false, 4)) //ActivationCompetitive
   network.getStructure.finalizeStructure()
   network.reset()
 
   def inputMaker(index: Int, data: MarketDataSet): Array[Double] = {
+
     var input: Array[Double] = Array[Double]()
-    if (normalizeInput) {
+    if(normalizeInput) {
       for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x.getReScaled(index - j, data)).toArray
+        input = input ++: indicatorsINPUT.map(x => x.getReScaled(index-j, data)).toArray
       }
     }
     else {
       for (j <- 0 until numberOfInputPeriods) {
-        input = input ++: indicatorsINPUT.map(x => x(index - j, data)).toArray
+        input = input ++: indicatorsINPUT.map(x => x(index-j, data)).toArray
       }
     }
     input
@@ -103,7 +99,7 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
   def train(data: MarketDataSet): Double = {
 
     // setting max and min input based on training-set
-    if (initialtraining && normalizeInput) {
+    if(initialtraining && normalizeInput) {
       indicatorsINPUT.foreach(_.setNormalizationBounds(data, pointsNeededToCompute))
       indicatorsINPUT.foreach(_.normOutRange(-1, 1))
     }
@@ -115,19 +111,8 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
 
       for (i <- pointsNeededToCompute until data.size - pointsToLookAhed) {
         input(i - pointsNeededToCompute) = inputMaker(i, data)
-        if(outA && high){
-          ideal(i - pointsNeededToCompute) = idealOUTPUTMaxHigh(data, i)
-        }
-        else if (outB && high){
-          ideal(i - pointsNeededToCompute) = idealOUTPUTMMaxMovingAverage(data, i)
-        }
-        else if (outA && !high) {
-          ideal(i - pointsNeededToCompute) = idealOUTPUTMinLow(data, i)
-        }
-        else if (outB && !high) {
-          ideal(i - pointsNeededToCompute) = idealOUTPUTMinMovingAverage(data, i)
-        }
-        if (i % 100 == 0) {
+        ideal(i - pointsNeededToCompute) = idealOUTPUTClassify(data, i)
+        if(i%100 == 0) {
           println("Input #" + i + " (size:" + input(i - pointsNeededToCompute).size + "):")
           println(input(i - pointsNeededToCompute).toVector)
           println("Output #" + i + ":")
@@ -136,26 +121,23 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
       }
       new BasicMLDataSet(input, ideal)
     }
+    println("START TRAINING")
 
     val train: Train = new Backpropagation(network, mlDataSet, learningRate, momentum)
+
 
     var lastError: Double = Double.MaxValue
     var lastAnneal: Int = 0
     var epoch = 0
     do {
       train.iteration()
+
       val error: Double = train.getError
-      if (epoch % 1000 == 0) {
+
+      if(epoch%1000==0) {
         println("Iteration(Backprop) #" + epoch + " Error:" + error)
       }
-      /*
-      if (error > 0.05) {
-        if ((lastAnneal > 1000) && (error > lastError || Math.abs(error - lastError) < 0.0001)) {
-          trainNetworkAnneal(mlDataSet)
-          lastAnneal = 0
-        }
-      }
-      */
+
       lastError = train.getError
       lastAnneal += 1
       epoch += 1
@@ -187,75 +169,35 @@ class VanstoneFinnie(settingsPath: String, high: Boolean) {
    * @param data marketDataSet to predict the feature of
    * @return the prediction. Based on the selected idealOUTPUT
    */
-  def apply(data: MarketDataSet): Double = {
-    val predictData: MLData = network.compute(new BasicMLData(inputMaker(data.size - 1, data)))
-    predictData.getData(0)
+  def apply(data: MarketDataSet): Array[Double] = {
+    network.compute(new BasicMLData(inputMaker(data.size-1, data))).getData
   }
 
 
   /**
-   * Possible idealOUTPUT: (Out A)
+   * Possible idealOUTPUT:
    * @param marketDataSet the marketDataSet to use for computing the ideal output
    * @param index the index of the point that should predict the output
    * @return the predicted output
    */
-  private def idealOUTPUTMaxHigh(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    var maxHigh: Double = Double.MinValue
-    for (i <- 0 until pointsToLookAhed) {
-      if (marketDataSet(index + i).high > maxHigh) {
-        maxHigh = marketDataSet.apply(index + i).high
-      }
-    }
-    Array((maxHigh - marketDataSet(index).close) / marketDataSet(index).close)
-  }
+  private def idealOUTPUTClassify(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
+    val diff = marketDataSet(index + pointsToLookAhed).close - marketDataSet(index).close
+    val percentDiff = (100D/marketDataSet(index).close) * diff
+    var array = Array(0D,0D,0D,0D)
 
-  /**
-   * Possible idealOUTPUT: (Out A)
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOUTPUTMinLow(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    var minLow: Double = Double.MaxValue
-    for (i <- 0 until pointsToLookAhed) {
-      if (marketDataSet(index + i).low < minLow) {
-        minLow = marketDataSet.apply(index + i).low
-      }
+    if(percentDiff > 0.7) { // 2 for day
+      array = Array(1D,0D,0D,0D)
     }
-    Array((minLow - marketDataSet(index).close) / marketDataSet(index).close)
-  }
-
-
-  /**
-   * Possible idealOUTPUT: (Out B)
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOUTPUTMMaxMovingAverage(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    var maxMovingAverage: Double =  Double.MinValue
-    for (i <- 0 until pointsToLookAhed) {
-      if (movingAveragePriceOut(index + i, marketDataSet) > maxMovingAverage) {
-        maxMovingAverage = movingAveragePriceOut(index + i, marketDataSet)
-      }
+    else if(percentDiff < -0.7) { // 2 for day
+      array = Array(0D,0D,0D,1D)
     }
-    Array((maxMovingAverage - marketDataSet.apply(index).close) / marketDataSet(index).close)
-  }
-
-  /**
-   * Possible idealOUTPUT: (Out B)
-   * @param marketDataSet the marketDataSet to use for computing the ideal output
-   * @param index the index of the point that should predict the output
-   * @return the predicted output
-   */
-  private def idealOUTPUTMinMovingAverage(marketDataSet: MarketDataSet, index: Int): Array[Double] = {
-    var minMovingAverage: Double =  Double.MaxValue
-    for (i <- 0 until pointsToLookAhed) {
-      if (movingAveragePriceOut(index + i, marketDataSet) < minMovingAverage) {
-        minMovingAverage = movingAveragePriceOut(index + i, marketDataSet)
-      }
+    else if(percentDiff > 0 && percentDiff <= 0.7) { // 2 for day
+      array = Array(0D,1D,0D,0D)
     }
-    Array((minMovingAverage - marketDataSet.apply(index).close) / marketDataSet(index).close)
+    else if(percentDiff < 0 && percentDiff >= -0.7) { // 2 for day
+      array = Array(0D,0D,1D,0D)
+    }
+    array
   }
 
 }

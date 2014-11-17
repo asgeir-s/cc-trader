@@ -57,7 +57,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
 
   var first = true
   var second = false
-  val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, "tsSettings/test/DummyTest1.conf") {
+  val dummyTSCoordinatorActorRef = TestActorRef(new DummyCoordinatorActor(dataActorProbe.ref, "tsSettings/test/DummyTest_5min.conf") {
     override def startTradingSystemActor =
       if (first) {
         first = false
@@ -103,7 +103,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
     dummyTSCoordinatorActor.hasRunningTS should be(false)
     dataActorProbe.send(dummyTSCoordinatorActorRef, Initialize(marketDataSet, liveDataProbe.ref))
     val result = tradingSystemProbe.expectMsgType[StartTraining]
-    result.marketDataSet should equal(marketDataSet)
+    result.marketDataSet.toString should equal(marketDataSet.toString)
     dummyTSCoordinatorActor.transferToNextSystemDate.getTime should equal(new Date(1339539816L * 1000L).getTime + (100L * 1000L))
     dummyTSCoordinatorActor.nextTradingSystem should equal(tradingSystemProbe.ref)
     dummyTSCoordinatorActor.nextSystemReady should be(true)
@@ -120,8 +120,8 @@ class DummyCoordinatorActorSpec extends UnitTest {
   }
 
   "When receiving AkkOn from tradingSystemActor it" should "send new RequestLiveBTData to LiveDataActor" in {
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, 1339539820, 500D, 5D, 5D, 5D, 50D))
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, 1339539821, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(33), None, 1339539820, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(34), None, 1339539821, 500D, 5D, 5D, 5D, 50D))
     dummyTSCoordinatorActor.messageDPCount should not equal (0)
     tradingSystemProbe.send(dummyTSCoordinatorActorRef, AkkOn(10, 0))
     liveDataProbe.expectMsgType[RequestNext]
@@ -130,7 +130,7 @@ class DummyCoordinatorActorSpec extends UnitTest {
 
   "When receiving dataPoint it" should "update the time to the time of the new dataPoint" in {
     val dataPointDate = (new Date(8L).getTime / 1000).toInt
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, 1339539822, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(35), None, 1339539822, 500D, 5D, 5D, 5D, 50D))
     dummyTSCoordinatorActor.tradingSystemDate.getTime should equal(new Date(1339539822 * 1000L).getTime)
   }
 
@@ -139,18 +139,18 @@ class DummyCoordinatorActorSpec extends UnitTest {
     val timeNow = dummyTSCoordinatorActor.tradingSystemDate.getTime
     val timeForTransfer = dummyTSCoordinatorActor.tradingSystemDate.getTime + (100L * 1000L)
     //dummyTSCoordinatorActor.hasRunningTS should be (false)
-    var dp = DataPoint(None, None, (timeNow / 1000).toInt, 500D, 5D, 5D, 5D, 50D)
+    var dp = DataPoint(Some(36), None, (timeNow / 1000).toInt, 500D, 5D, 5D, 5D, 50D)
     assert(dp.date.before(new Date(timeForTransfer)))
     dummyTSCoordinatorActor.mode should be(Mode.TESTING)
     liveDataProbe.send(dummyTSCoordinatorActorRef, dp)
     tradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339539824L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(37), None, (new Date(1339539824L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339539825L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(38), None, (new Date(1339539825L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339539900L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(39), None, (new Date(1339539900L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339539999L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(40), None, (new Date(1339539999L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectMsgType[AkkOn]
     tradingSystemProbe.expectMsgType[MarketDataSet]
     tradingSystemProbe.expectMsgType[DataPoint]
@@ -162,36 +162,36 @@ class DummyCoordinatorActorSpec extends UnitTest {
     "be sent to the old tradingSystemActor until time is after transferTime. Then the dataPoints should be sent to the new system and the old system should get PoisonPill" in {
     // already got one dataPoint in last test
     assert(dummyTSCoordinatorActor.mode == Mode.TESTING)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339539999L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(41), None, (new Date(1339539999L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectMsgType[DataPoint]
     nextTradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540000L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(42), None, (new Date(1339540000L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectMsgType[DataPoint]
     nextTradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540100L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(43), None, (new Date(1339540100L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectMsgType[DataPoint]
     nextTradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540200L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(44), None, (new Date(1339540200L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     tradingSystemProbe.expectMsgType[DataPoint]
     nextTradingSystemProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540300L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(45), None, (new Date(1339540300L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     nextTradingSystemProbe.expectMsgType[StartTraining]
     liveDataProbe.expectNoMsg(1 second)
     nextTradingSystemProbe.expectNoMsg(1 second)
     tradingSystemProbe.expectMsgType[DataPoint]
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540350L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(46), None, (new Date(1339540350L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     nextTradingSystemProbe.expectNoMsg(1 second)
     tradingSystemProbe.expectMsgType[DataPoint]
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540370L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(47), None, (new Date(1339540370L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     nextTradingSystemProbe.expectNoMsg(1 second)
     tradingSystemProbe.expectMsgType[DataPoint]
     // this data point is after change to nextTradingSystem
     dummyTSCoordinatorActor.hasRunningTS should be(true)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540410L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(48), None, (new Date(1339540410L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     nextTradingSystemProbe.expectMsgType[AkkOn]
     nextTradingSystemProbe.expectMsgType[MarketDataSet]
     nextTradingSystemProbe.expectMsgType[DataPoint]
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540450L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(49), None, (new Date(1339540450L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     nextTradingSystemProbe.expectMsgType[DataPoint]
 
   }
@@ -200,16 +200,16 @@ class DummyCoordinatorActorSpec extends UnitTest {
     "be sent directly to the new system at once. And the old system should get PoisonPill" in {
     liveDataProbe.send(dummyTSCoordinatorActorRef, Mode.LIVE)
     nextTradingSystemProbe.expectMsgType[Mode]
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540451L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540452L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540453L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540454L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(50), None, (new Date(1339540451L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(51), None, (new Date(1339540452L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(52), None, (new Date(1339540453L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(53), None, (new Date(1339540454L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
 
     // time to start training nextTradingSystem
     thirdTradingSystemProbe.expectMsgType[StartTraining]
     thirdTradingSystemProbe.expectMsgType[Mode]
     liveDataProbe.expectNoMsg(1 second)
-    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(None, None, (new Date(1339540455L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
+    liveDataProbe.send(dummyTSCoordinatorActorRef, DataPoint(Some(54), None, (new Date(1339540455L * 1000L).getTime / 1000).toInt, 500D, 5D, 5D, 5D, 50D))
     thirdTradingSystemProbe.expectMsgType[AkkOn]
     thirdTradingSystemProbe.expectMsgType[MarketDataSet]
     thirdTradingSystemProbe.expectMsgType[DataPoint]

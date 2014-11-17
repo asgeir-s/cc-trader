@@ -1,4 +1,4 @@
-package com.cctrader.systems.ann.vanstoneFinnie
+package com.cctrader.systems.ann.priceDirection
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
@@ -8,16 +8,37 @@ import com.cctrader.indicators.technical._
 /**
  *
  */
-class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
+class PriceDirectionTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
   var marketDataSet = marketDataSetIn
   val signalWriter = signalWriterIn
   val settingPath = settingPathIn
 } with TradingSystemActor {
 
+  val output = config.getString("output.indicator")
   var count = 0
+  var indicator = {
+    if (output.equals("rateOfChange")) {
+      new RateOfChange(config.getInt("indicators.rateOfChange"))
+    }
+    else if (output.equals("williamsR")) {
+      new WilliamsR(config.getInt("indicators.williamsR"))
+    }
+    else if (output.equals("disparityIndex")) {
+      new DisparityIndex(config.getInt("indicators.disparityIndex"))
+    }
+    else if (output.equals("aroonOscillator")) {
+      new AroonOscillator(config.getInt("indicators.aroonOscillator"))
+    }
+    else {
+      log.error("ForwardIndicator not correctly specified.")
+      new RateOfChange(config.getInt("indicators.rateOfChange"))
+    }
+  }
 
-  val annUp = new VanstoneFinnie(settingPath, true)
-  val annDown = new VanstoneFinnie(settingPath, false)
+  val ann = new PriceDirection(settingPath, indicator)
+
+  val reversal = output.equals("williamsR")
+
 
   /**
    * Train the system.
@@ -26,8 +47,7 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
    */
   override def train(trainingMarketDataSet: MarketDataSet): Long = {
     val startTrainingTime = System.currentTimeMillis()
-    annUp.train(trainingMarketDataSet)
-    annDown.train(trainingMarketDataSet)
+    ann.train(trainingMarketDataSet)
     val endTrainingTime = System.currentTimeMillis()
     endTrainingTime - startTrainingTime
   }
@@ -41,15 +61,13 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
     log.info("2Received new dataPoint. MarketDataSet is now: size:" + marketDataSet.size + ", fromDate" + marketDataSet.fromDate
       + ", toDate" + marketDataSet.toDate)
 
-    val predictionMaxUp = annUp(marketDataSet)
-    val predictionMinDown = annDown(marketDataSet)
-
+    val directIndicator = ann.directIndicator(marketDataSet)
+    val prediction = ann(marketDataSet)
     println("NEW DATAPOINT:")
-    println("predictionMaxUp:" + predictionMaxUp)
-    println("predictionMinDown:" + predictionMinDown)
+    println("prediction:" + prediction)
 
     //Take Long position
-    if (predictionMaxUp.abs > (predictionMinDown.abs + thresholdLong)) {
+    if (prediction > thresholdLong) {
       if (signalWriter.status.equals(Signal.CLOSE)) {
         goLong
       }
@@ -60,7 +78,7 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
     }
 
     //Take Short position
-    else if ((predictionMaxUp.abs + thresholdShort) < predictionMinDown.abs) {
+    else if (prediction < thresholdShort) {
       if (signalWriter.status.equals(Signal.CLOSE)) {
         goShort
       }
@@ -71,20 +89,19 @@ class VanstoneFinnieTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sign
     }
 
     //Close Long position
-    else if (signalWriter.status == Signal.LONG && (predictionMinDown.abs > predictionMaxUp.abs)) {
+    else if (signalWriter.status == Signal.LONG && prediction < 0) {
       goClose
     }
 
     //Close Short position
-    else if (signalWriter.status == Signal.SHORT && (predictionMinDown.abs < predictionMaxUp.abs)) {
+    else if (signalWriter.status == Signal.SHORT && prediction > 0) {
       goClose
     }
+
   }
-
-
 }
 
-object VanstoneFinnieTSActor {
+object PriceDirectionTSActor {
   def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: String): Props =
-    Props(new VanstoneFinnieTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
+    Props(new PriceDirectionTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
 }

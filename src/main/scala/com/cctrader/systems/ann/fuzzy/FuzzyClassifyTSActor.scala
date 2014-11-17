@@ -1,13 +1,13 @@
-package com.cctrader.systems.ann.fourWayClassify
+package com.cctrader.systems.ann.fuzzy
 
 import akka.actor.Props
 import com.cctrader.TradingSystemActor
-import com.cctrader.data.{Signal, MarketDataSet, Signaler}
+import com.cctrader.data.{MarketDataSet, Signal, Signaler}
 
 /**
  *
  */
-class FourWayClassifyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
+class FuzzyClassifyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Signaler, settingPathIn: String) extends {
   var marketDataSet = marketDataSetIn
   val signalWriter = signalWriterIn
   val settingPath = settingPathIn
@@ -32,7 +32,7 @@ class FourWayClassifyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sig
 
   var count = 0
 
-  val ann = new FourWayClassifyANN(settingPath)
+  val ann = new FuzzyClassifyANN(settingPath)
 
   /**
    * Train the system.
@@ -59,14 +59,8 @@ class FourWayClassifyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sig
     println("NEW DATAPOINT:")
     println("prediction:" + prediction.toVector)
 
-    val max: Double = prediction.max
-    val upMax = prediction(0) == max
-    val upMin = prediction(1) == max
-    val downMin = prediction(2) == max
-    val downMax = prediction(3) == max
-
       //Take Long position
-      if (upMax && !downMin && !downMax) {
+      if (prediction(0) > 0.38 && prediction(2) < 0.32  && prediction(3) < 0.32) {
         if (signalWriter.status.equals(Signal.CLOSE)) {
           goLong
         }
@@ -77,7 +71,7 @@ class FourWayClassifyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sig
       }
 
       //Take Short position
-      else if (downMax && !upMax && !upMin) {
+      else if (prediction(0) < 0.32 && prediction(1) < 0.32  && prediction(3) > 0.38) {
         if (signalWriter.status.equals(Signal.CLOSE)) {
           goShort
         }
@@ -88,18 +82,18 @@ class FourWayClassifyTSActor(marketDataSetIn: MarketDataSet, signalWriterIn: Sig
       }
 
       //Close Long position
-      else if (signalWriter.status == Signal.LONG && (downMax || downMin)) {
+      else if (signalWriter.status == Signal.LONG && (prediction(0) < 0.25 || prediction(2) > 0.25  || prediction(3) > 0.25)) {
         goClose
       }
 
       //Close Short position
-      else if (signalWriter.status == Signal.SHORT && (upMax || upMin)) {
+      else if (signalWriter.status == Signal.SHORT && (prediction(0) > 0.25 || prediction(1) > 0.25 || prediction(3) < 0.25)) {
         goClose
       }
     }
 }
 
-object FourWayClassifyTSActor {
+object FuzzyClassifyTSActor {
   def props(trainingMarketDataSet: MarketDataSet, signalWriterIn: Signaler, tsSetting: String): Props =
-    Props(new FourWayClassifyTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
+    Props(new FuzzyClassifyTSActor(trainingMarketDataSet, signalWriterIn, tsSetting))
 }
